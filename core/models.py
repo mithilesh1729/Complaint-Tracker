@@ -102,13 +102,10 @@ from django.dispatch import receiver
 
 @receiver(post_save, sender=Complaint)
 def create_status_log(sender, instance, created, **kwargs):
-    if not created:  # Sirf update pe chalega, create pe nahi
-        previous = Complaint.objects.get(complaint_id=instance.complaint_id)
-        if previous.status != instance.status:  # Sirf status change pe log
-            StatusLog.objects.create(
-                complaint=instance,
-                status=instance.status,
-                message=f"Status updated to {instance.status}"
-            )
-            
+    if created:
+        StatusLog.objects.create(
+            complaint=instance,
+            status=instance.status,
+            message="Complaint created with initial status"
+        )            
                       
