@@ -44,7 +44,7 @@ class Complaint(models.Model):
         ('water', 'Water'),
         ('other', 'Other'),  # 🎯 Different complaint categories
     )
-
+    
     complaint_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # 🎯 Unique ID for tracking
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='complaints')  # 🎯 Link to the student
     complaint_type = models.CharField(max_length=20, choices=TYPE_CHOICES)  # 🎯 Type of complaint
@@ -93,6 +93,7 @@ class StatusLog(models.Model):
 
     def __str__(self):
         return f"{self.complaint.complaint_id} - {self.status} at {self.timestamp}"
+
 
 
 # ✅ Django Signal (Auto-Log Complaint Status Changes)
