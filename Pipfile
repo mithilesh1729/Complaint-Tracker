@@ -7,6 +7,8 @@ name = "pypi"
 django = "*"
 mysql-connector-python = "*"
 mysqlclient = "*"
+djangorestframework = "*"
+pillow = "*"
 
 [dev-packages]
 
