@@ -129,9 +129,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-# Media settings for photo upload
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
 
 
 # Default primary key field type
@@ -141,3 +139,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'core.User'
+# Media settings for photo upload
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Optional for session-based authentication
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Sab endpoints ke liye
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',        # JSON response
+        'rest_framework.renderers.BrowsableAPIRenderer', # Browsable API
+    ],
+}
+
+
+# # Disable CSRF middleware for API views
+# CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
+# CSRF_COOKIE_SECURE = False  # For local development

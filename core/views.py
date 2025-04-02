@@ -2,102 +2,155 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Complaint, StatusLog
+from .models import Complaint, StatusLog, ComplaintImage
 from .serializers import ComplaintSerializer
 from django.contrib.auth import get_user_model
+from django.views.decorators.csrf import csrf_exempt
 
-# Get the custom User model (if using a custom user model instead of Django's default)
+
 User = get_user_model()
 
+# ✅ Retrieve All Complaints
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])  # Ensure only authenticated users can access
+@permission_classes([IsAuthenticated])
 def complaint_list(request):
     """
-    Retrieve a list of complaints.
-    - Admin users can view all complaints.
-    - Regular users can only see their own complaints.
+    Retrieve complaints.
+    - Admins: View all complaints.
+    - Users: View only their own complaints.
     """
-    if getattr(request.user, 'is_admin', False):  # Ensure 'is_admin' exists in the user model
-        complaints = Complaint.objects.all()
-    else:
-        complaints = Complaint.objects.filter(user=request.user)  # Filter complaints for the logged-in user
-    serializer = ComplaintSerializer(complaints, many=True)  # Serialize the queryset
-    return Response(serializer.data)  # Return serialized data as JSON response
+    complaints = Complaint.objects.all() if request.user.is_admin else Complaint.objects.filter(user=request.user)
+    serializer = ComplaintSerializer(complaints, many=True)
+    return Response(serializer.data)
+
+# # ✅ Create Complaint
+# @api_view(['POST'])
+# @csrf_exempt  # Disable CSRF for this view
+# @permission_classes([IsAuthenticated])
+# def complaint_create(request):
+#     """
+#     Create a complaint with optional images.
+#     - Regular users create their own complaints.
+#     - Admins can create complaints for students using 'roll_no'.
+#     """
+#     serializer = ComplaintSerializer(data=request.data, context={'request': request})
+    
+#     if serializer.is_valid():
+#         user = request.user
+#         if request.user.is_admin and 'roll_no' in request.data:
+#             user = User.objects.filter(roll_no=request.data['roll_no']).first()
+#             if not user:
+#                 return Response({"error": "User with this roll number does not exist"}, status=400)
+
+#         # Validate complaint_type
+#         if request.data.get('complaint_type') not in dict(Complaint.TYPE_CHOICES):
+#             return Response({"error": "Invalid complaint type"}, status=400)
+
+#         complaint = serializer.save(user=user)
+        
+#         # Handle image uploads
+#         images = request.FILES.getlist('images')
+#         for image in images:
+#             ComplaintImage.objects.create(complaint=complaint, image=image)
+        
+#         serializer = ComplaintSerializer(complaint)
+#         return Response(serializer.data, status=201)
+    
+#     return Response(serializer.errors, status=400)
+
+
+
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])  # Only authenticated users can create complaints
+@csrf_exempt  # Disable CSRF for this view
+@permission_classes([IsAuthenticated])
 def complaint_create(request):
     """
-    Create a new complaint.
-
-    - Regular users can submit their own complaints.
-    - Admin users can create complaints on behalf of students using their 'roll_no'.
+    Create a complaint with optional images.
+    - Regular users create their own complaints.
+    - Admins can create complaints for students using 'roll_no'.
     """
-    serializer = ComplaintSerializer(data=request.data, context={'request': request})  # Deserialize request data
+    serializer = ComplaintSerializer(data=request.data, context={'request': request})
+    
     if serializer.is_valid():
-        user = request.user  # Default to the logged-in user
-        # If admin is creating a complaint for a student using roll_no
-        if getattr(request.user, 'is_admin', False) and 'roll_no' in request.data:
-            try:
-                user = User.objects.get(roll_no=request.data['roll_no'])  # Get user by roll_no
-            except User.DoesNotExist:
-                return Response({"error": "Invalid roll number"}, status=400)  # Return error if user not found
-        serializer.save(user=user)  # Save the complaint with the determined user
-        return Response(serializer.data, status=201)  # Return created complaint data
-    return Response(serializer.errors, status=400)  # Return validation errors if invalid data is provided
+        user = request.user
+        # Admin can create complaints for students by roll_no
+        if request.user.is_admin and 'roll_no' in request.data:
+            user = User.objects.filter(roll_no=request.data['roll_no']).first()
+            if not user:
+                return Response({"error": "User with this roll number does not exist"}, status=400)
 
+        # Validate complaint_type
+        if request.data.get('complaint_type') not in dict(Complaint.TYPE_CHOICES):
+            return Response({"error": "Invalid complaint type"}, status=400)
+
+        # Save the complaint object
+        complaint = serializer.save(user=user)
+        
+        # Handle image uploads if any
+        images = request.FILES.getlist('images')
+        if images:
+            for image in images:
+                ComplaintImage.objects.create(complaint=complaint, image=image)
+        
+        # Return the serialized complaint data
+        serializer = ComplaintSerializer(complaint)
+        return Response(serializer.data, status=201)
+    
+    return Response(serializer.errors, status=400)
+
+
+
+
+# ✅ Retrieve Single Complaint
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])  # Only authenticated users can view complaint details
+@permission_classes([IsAuthenticated])
 def complaint_detail(request, complaint_id):
     """
-    Retrieve details of a specific complaint.
-    
-    - Admin users can view any complaint.
-    - Regular users can only view their own complaints.
+    Retrieve a complaint.
+    - Admins can access all complaints.
+    - Users can only access their own.
     """
-    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)  # Retrieve complaint or return 404
-    # Restrict non-admin users from accessing other users' complaints
-    if not getattr(request.user, 'is_admin', False) and complaint.user != request.user:
-        return Response({"error": "Unauthorized"}, status=403)  # Forbidden response for unauthorized access
-    serializer = ComplaintSerializer(complaint)  # Serialize the complaint object
-    return Response(serializer.data)  # Return serialized complaint details
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+    if not request.user.is_admin and complaint.user != request.user:
+        return Response({"error": "You can only view your own complaints"}, status=403)
+    serializer = ComplaintSerializer(complaint)
+    return Response(serializer.data)
 
+# ✅ Update Complaint
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated])  # Only authenticated users can update complaints
+@permission_classes([IsAuthenticated])
 def complaint_update(request, complaint_id):
     """
-    Update complaint details (only for admins).
-    
-    - Only admins can update the complaint status.
-    - If the status changes, a log entry is created.
+    Update complaint.
+    - Only Admins can update complaint details.
+    - If status changes, it logs a status update.
     """
-    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)  # Retrieve complaint or return 404
-    # Restrict updates to admins only
-    if not getattr(request.user, 'is_admin', False):
-        return Response({"error": "Only admins can update complaint status"}, status=403)  # Forbidden response
-    serializer = ComplaintSerializer(complaint, data=request.data, partial=True)  # Partial update
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+    if not request.user.is_admin:
+        return Response({"error": "Only admins can update complaint status"}, status=403)
+    serializer = ComplaintSerializer(complaint, data=request.data, partial=True)
+    
     if serializer.is_valid():
-        old_status = complaint.status  # Store previous status before updating
-        complaint = serializer.save()  # Save updated complaint
-        # Log status change if it was updated
+        old_status = complaint.status
+        complaint = serializer.save()
         if 'status' in request.data and complaint.status != old_status:
-            message = request.data.get('message', 'Status updated')  # Default message if none provided
-            StatusLog.objects.create(complaint=complaint, status=complaint.status, message=message)  # Log status update
-        return Response(serializer.data)  # Return updated complaint data
-    return Response(serializer.errors, status=400)  # Return validation errors
+            message = request.data.get('message', 'Status updated')
+            StatusLog.objects.create(complaint=complaint, status=complaint.status, message=message)
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
 
+# ✅ Delete Complaint
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])  # Only authenticated users can delete complaints
+@permission_classes([IsAuthenticated])
 def complaint_delete(request, complaint_id):
     """
     Delete a complaint.
-    
-    - Regular users can delete only their own complaints.
-    - Admin users can delete any complaint.
+    - Users can delete only their own complaints.
+    - Admins can delete any complaint.
     """
-    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)  # Retrieve complaint or return 404
-    # Only allow deletion if the user owns the complaint or is an admin
-    if complaint.user != request.user and not getattr(request.user, 'is_admin', False):
-        return Response({"error": "Unauthorized"}, status=403)  # Forbidden response for unauthorized access
-    complaint.delete()  # Delete the complaint from the database
-    return Response({"message": "Complaint deleted successfully"}, status=200)  # Return success message
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+    if complaint.user != request.user and not request.user.is_admin:
+        return Response({"error": "You can only delete your own complaints"}, status=403)
+    complaint.delete()
+    return Response({"message": "Complaint deleted successfully"}, status=200)
