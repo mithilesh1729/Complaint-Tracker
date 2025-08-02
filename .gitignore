@@ -1,11 +1,14 @@
 # Virtual environment
 venv/
 .env
+*.env
+
+# Python cache
 *.pyc
 __pycache__/
 
 # Django settings
-db.sqlite3
+*.sqlite3
 media/
 staticfiles/
 *.log
@@ -18,6 +21,12 @@ staticfiles/
 .DS_Store
 Thumbs.db
 
-# Migrations (optional: keep initial migrations)
+# Migrations (keep __init__.py)
 **/migrations/*.py
 !**/migrations/__init__.py
+
+# Testing & coverage
+.pytest_cache/
+htmlcov/
+.coverage
+
