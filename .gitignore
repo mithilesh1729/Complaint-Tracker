@@ -1,0 +1,32 @@
+# Virtual environment
+venv/
+.env
+*.env
+
+# Python cache
+*.pyc
+__pycache__/
+
+# Django settings
+*.sqlite3
+media/
+staticfiles/
+*.log
+*.pot
+*.mo
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Migrations (keep __init__.py)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Testing & coverage
+.pytest_cache/
+htmlcov/
+.coverage
+

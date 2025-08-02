@@ -119,7 +119,7 @@ LANGUAGE_CODE = 'en-us'
 
 # TIME_ZONE = 'UTC'
 TIME_ZONE = 'Asia/Kolkata'  # Indian Standard Time (IST)
-USE_TZ = True  # Keep it True for timezone-aware datetimes
+USE_TZ = False  # Keep it True for timezone-aware datetimes
 
 
 USE_I18N = True
