@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
-from django.utils import timezone
+# from django.utils import timezone
+import datetime
 import uuid
 
 # ✅ Custom User Manager (for superuser creation)
@@ -87,7 +88,8 @@ class Complaint(models.Model):
 
     def save(self, *args, **kwargs):
         if self.status == 'resolved' and not self.resolved_at:
-            self.resolved_at = timezone.now()
+            # self.resolved_at = timezone.now()
+            self.resolved_at = datetime.datetime.now()  # Use naive datetime
         super().save(*args, **kwargs)
 
     def __str__(self):
