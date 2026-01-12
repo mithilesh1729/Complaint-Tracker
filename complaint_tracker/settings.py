@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-6xow^!2$2kn@o5_39-%yn_6d8tsry9y2#3#!3*eu81b=$h_v@)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ "localhost",
+    "127.0.0.1",
+    "testserver",  # ← add this
+    ]
 
 
 # Application definition
@@ -37,12 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
     'rest_framework',
+    'rest_framework.authtoken', # for jwt
     'django_filters',
+    'corsheaders',
+    'core',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',   # MUST be at top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,6 +57,23 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+
+CORS_ALLOW_CREDENTIALS = True
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = False  # dev only
+CSRF_COOKIE_SECURE = False     # dev only
+#  Required for cross-origin cookies on localhost.
+
+
+
 
 ROOT_URLCONF = 'complaint_tracker.urls'
 
@@ -149,21 +172,27 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',  # Wapas session-based
-        'rest_framework.authentication.BasicAuthentication',    # Optional—browser ke liye
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ],
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',  # Filter backend
-    ],
 }
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    # 🔑 Custom user PK support
+    "USER_ID_FIELD": "roll_no",
+    "USER_ID_CLAIM": "roll_no",
+
+    # ⏱ Token lifetimes
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+
+    # 🔐 Auth header
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 # # Disable CSRF middleware for API views
 # CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
