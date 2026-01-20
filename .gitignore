@@ -1,13 +1,23 @@
-# Virtual environment
+# =========================
+# Virtual environments
+# =========================
 venv/
 .env
 *.env
+.env.*
 
-# Python cache
-*.pyc
+# =========================
+# Python cache & compiled
+# =========================
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# Django settings
+# =========================
+# Django
+# =========================
+db.sqlite3
 *.sqlite3
 media/
 staticfiles/
@@ -15,18 +25,39 @@ staticfiles/
 *.pot
 *.mo
 
+# =========================
+# Django migrations
+# (keep __init__.py)
+# =========================
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# =========================
+# Frontend (React / Vite)
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+
+# =========================
+# Testing & coverage
+# =========================
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# =========================
 # IDE & OS files
+# =========================
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
-# Migrations (keep __init__.py)
-**/migrations/*.py
-!**/migrations/__init__.py
-
-# Testing & coverage
-.pytest_cache/
-htmlcov/
-.coverage
-
+# =========================
+# Misc
+# =========================
+*.swp
+*.tmp

@@ -66,11 +66,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SECURE = False  # dev only
-CSRF_COOKIE_SECURE = False     # dev only
-#  Required for cross-origin cookies on localhost.
+
+# LOCAL DEVELOPMENT FIX
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
 
 
 
@@ -170,14 +173,24 @@ AUTH_USER_MODEL = 'core.User'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "1000/day",        # safe global default
+        "complaints": "100/min",   # complaints listing
+    },
 }
+
 
 from datetime import timedelta
 
