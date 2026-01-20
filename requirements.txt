@@ -9,9 +9,13 @@ django-filter==25.1
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.1
 fonttools==4.61.1
-mysql-connector-python==9.2.0
-mysqlclient==2.2.7
-pillow==11.2.0
+
+gunicorn>=21.2.0
+# mysqlclient==2.2.7
+Pillow>=10.0.0,<11.0.0
+psycopg2-binary>=2.9
+
+
 pycparser==2.23
 pydyf==0.12.1
 PyJWT==2.10.1
