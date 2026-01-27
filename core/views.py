@@ -1,7 +1,3 @@
-# ===============================
-# Necessary Django & DRF imports
-# ===============================
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -16,18 +12,15 @@ from .pagination import CustomPagination
 from .throttling import ComplaintRateThrottle
 from django.contrib.auth import get_user_model
 
+from django.http import HttpResponse
+from .services.pdf_service import generate_complaint_slip_pdf
+from django.utils import timezone
+
+from .permissions import IsOwnerOrAdmin
+
 User = get_user_model()
 
-# =====================================================
-# NOTE:
-# ❌ Removed session-based login/logout views
-# ❌ Removed authenticate(), login(), logout()
-# WHY:
-# We are now using JWT authentication via /api/token/
-# =====================================================
 
-
-# =====================================================
 # Complaint List View
 # =====================================================
 class ComplaintListView(generics.ListAPIView):
@@ -59,7 +52,6 @@ class ComplaintListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # ✅ CHANGED:
         # Using roll_no instead of user.id (custom primary key)
         cache_key = f"complaints_{user.roll_no}"
 
@@ -83,7 +75,6 @@ class ComplaintListView(generics.ListAPIView):
         return queryset
 
 
-# =====================================================
 # Create Complaint
 # =====================================================
 @api_view(['POST'])
@@ -112,7 +103,7 @@ def complaint_create(request):
 
         complaint = serializer.save(user=user)
 
-        # Handle image uploads
+        # image uploads
         images = request.FILES.getlist('images')
         for image in images:
             ComplaintImage.objects.create(
@@ -120,7 +111,6 @@ def complaint_create(request):
                 image=image
             )
 
-        # ✅ CHANGED:
         # Invalidate cache using roll_no instead of user.id
         cache.delete(f"complaints_{request.user.roll_no}")
 
@@ -132,28 +122,23 @@ def complaint_create(request):
     return Response(serializer.errors, status=400)
 
 
-# =====================================================
 # Retrieve Single Complaint
 # =====================================================
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsOwnerOrAdmin])
 def complaint_detail(request, complaint_id):
-    complaint = get_object_or_404(
-        Complaint,
-        complaint_id=complaint_id
-    )
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
 
-    # Student can view only their own complaints
-    if not request.user.is_admin and complaint.user != request.user:
-        return Response(
-            {"error": "You can only view your own complaints"},
-            status=403
-        )
+    # ✅ Explicit permission check (correct for FBV)
+    for permission in request.resolver_match.func.permission_classes:
+        perm = permission()
+        if hasattr(perm, "has_object_permission"):
+            if not perm.has_object_permission(request, None, complaint):
+                return Response({"error": "You can only view your own complaints"}, status=403)
 
     return Response(ComplaintSerializer(complaint).data)
 
 
-# =====================================================
 # Update Complaint (Admin Only)
 # =====================================================
 @api_view(['PATCH'])
@@ -178,20 +163,14 @@ def complaint_update(request, complaint_id):
 
     if serializer.is_valid():
         old_status = complaint.status
+        
+        # Attach transient admin remark for signal
+        complaint._status_change_message = request.data.get(
+            "message",
+            "Status updated by admin"
+        )
+        
         complaint = serializer.save()
-
-        # Log status change
-        if 'status' in request.data and complaint.status != old_status:
-            StatusLog.objects.create(
-                complaint=complaint,
-                status=complaint.status,
-                message=request.data.get(
-                    'message',
-                    'Status updated'
-                )
-            )
-
-        # ✅ CHANGED:
         # Cache invalidation using roll_no
         cache.delete(f"complaints_{request.user.roll_no}")
 
@@ -200,7 +179,6 @@ def complaint_update(request, complaint_id):
     return Response(serializer.errors, status=400)
 
 
-# =====================================================
 # Delete Complaint
 # =====================================================
 @api_view(['DELETE'])
@@ -219,11 +197,102 @@ def complaint_delete(request, complaint_id):
 
     complaint.delete()
 
-    # ✅ CHANGED:
     # Cache invalidation using roll_no
     cache.delete(f"complaints_{request.user.roll_no}")
 
     return Response(
         {"message": "Complaint deleted successfully"},
+        status=200
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def complaint_logs(request, complaint_id):
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+
+    # Admin OR owner can view logs
+    if not request.user.is_admin and complaint.user != request.user:
+        return Response({"error": "Forbidden"}, status=403)
+
+    logs = complaint.status_logs.order_by("timestamp")
+
+    data = [
+        {
+            "status": log.status,
+            "message": log.message,
+            "timestamp": log.timestamp,
+        }
+        for log in logs
+    ]
+
+    return Response(data)
+
+
+
+
+
+
+from django.http import FileResponse
+from .services.pdf_service import generate_complaint_slip_pdf
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def download_complaint_slip(request, complaint_id):
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+
+    # Admin OR complaint owner allowed
+    if not request.user.is_admin and complaint.user != request.user:
+        return Response({"detail": "Not allowed"}, status=403)
+
+    pdf_buffer = generate_complaint_slip_pdf(complaint)
+
+    return FileResponse(
+        pdf_buffer,
+        as_attachment=True,
+        filename=f"complaint_{complaint.complaint_id}.pdf",
+        content_type="application/pdf",
+    )
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def confirm_complaint_resolution(request, complaint_id):
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+
+    # Only owner
+    if complaint.user != request.user:
+        return Response({"detail": "Not allowed"}, status=403)
+
+    # ❌ Must be resolved
+    if complaint.status != "resolved":
+        return Response(
+            {"detail": "Complaint not resolved yet"},
+            status=400
+        )
+
+    # Idempotent
+    if complaint.is_confirmed:
+        return Response(
+            {"detail": "Already confirmed"},
+            status=200
+        )
+
+    # Confirm
+    complaint.is_confirmed = True
+    complaint.confirmed_at = timezone.now()
+    complaint.student_feedback = request.data.get("feedback", "")
+    complaint.save()
+
+    StatusLog.objects.create(
+        complaint=complaint,
+        status="resolved",
+        message="Resolution confirmed by student"
+    )
+
+    return Response(
+        {"message": "Resolution confirmed"},
         status=200
     )
