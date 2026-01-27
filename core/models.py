@@ -106,11 +106,22 @@ class Complaint(models.Model):
     confirmed_at = models.DateTimeField(null=True, blank=True)
     student_feedback = models.TextField(blank=True)
     
+    # CHANGE1: Track original status (NO DB CHANGE)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Store the original status when object is loaded from DB
+        self._original_status = self.status
+
+    # CHANGE2: Save method remains SAFE & SINGLE-RESPONSIBILITY
     def save(self, *args, **kwargs):
-        #  Auto-set resolved_at (timezone safe)
+        # Auto-set resolved_at ONLY when transitioning to resolved
         if self.status == "resolved" and not self.resolved_at:
             self.resolved_at = timezone.now()
+
         super().save(*args, **kwargs)
+
+        # Reset original status tracker AFTER save
+        self._original_status = self.status
 
     def __str__(self):
         return f"{self.complaint_id} - {self.complaint_type} ({self.status})"

@@ -41,7 +41,7 @@ function Dashboard() {
       setNext(response.data.next);
       setPrev(response.data.previous);
 
-      // 🔑 CALCULATE OFFSET
+      // CALCULATE OFFSET
       if (url.includes("page=")) {
         const page = Number(new URL(url).searchParams.get("page"));
         setPageOffset((page - 1) * PAGE_SIZE);
@@ -57,7 +57,7 @@ function Dashboard() {
     fetchComplaints("/complaints/");
   }, [statusFilter, typeFilter, ordering]);
 
-  // -------------------------
+
   // Helpers
   // -------------------------
   const statusBadge = (status) => {
@@ -73,7 +73,7 @@ function Dashboard() {
     );
   };
 
-  // -------------------------
+
   // Render
   // -------------------------
   return (
@@ -228,10 +228,7 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* Details Modal (unchanged) */}
-        {/* -------------------------
-          DETAILS MODAL
-      ------------------------- */}
+        {/* DETAILS MODAL */}
         {selectedComplaint && (
           <div
             className="modal fade show"

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import User, Complaint, ComplaintImage, StatusLog
+from django.db import transaction
+
 
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
@@ -76,29 +78,31 @@ class ComplaintSerializer(serializers.ModelSerializer):
             'confirmed_at',
         ]
 
-    # Create Complaint
+    
     def create(self, validated_data):
         request = self.context.get('request')
         images_data = request.FILES.getlist('images')
 
-        complaint = Complaint.objects.create(
-            user=request.user,
-            name=validated_data['name'],
-            hostel=validated_data['hostel'],
-            room_no=validated_data['room_no'],
-            phone_number=validated_data['phone_number'],
-            complaint_type=validated_data['complaint_type'],
-            description=validated_data['description'],
-            priority=validated_data.get('priority', 'medium'),
-        )
-
-        for image in images_data:
-            ComplaintImage.objects.create(
-                complaint=complaint,
-                image=image
+        with transaction.atomic():
+            complaint = Complaint.objects.create(
+                user=request.user,
+                name=validated_data.get('name', request.user.name),
+                hostel=validated_data.get('hostel', request.user.hostel),
+                room_no=validated_data['room_no'],
+                phone_number=validated_data['phone_number'],
+                complaint_type=validated_data['complaint_type'],
+                description=validated_data['description'],
+                priority=validated_data.get('priority', 'medium'),
             )
 
-        return complaint
+            for image in images_data:
+                ComplaintImage.objects.create(
+                    complaint=complaint,
+                    image=image
+                )
+
+            return complaint
+
 
    
     # Latest Admin Remark

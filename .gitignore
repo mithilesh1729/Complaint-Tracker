@@ -61,3 +61,6 @@ Thumbs.db
 # =========================
 *.swp
 *.tmp
+
+.env
+settings/prod.py

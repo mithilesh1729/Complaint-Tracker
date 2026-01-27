@@ -10,7 +10,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
- # ✅ ADD CUSTOM CLAIMS
+        # ADD CUSTOM CLAIMS
         token["roll_no"] = user.roll_no
         token["is_admin"] = user.is_admin
 

@@ -16,6 +16,8 @@ from django.http import HttpResponse
 from .services.pdf_service import generate_complaint_slip_pdf
 from django.utils import timezone
 
+from .permissions import IsOwnerOrAdmin
+
 User = get_user_model()
 
 
@@ -123,19 +125,16 @@ def complaint_create(request):
 # Retrieve Single Complaint
 # =====================================================
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsOwnerOrAdmin])
 def complaint_detail(request, complaint_id):
-    complaint = get_object_or_404(
-        Complaint,
-        complaint_id=complaint_id
-    )
+    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
 
-    # Student can view only their own complaints
-    if not request.user.is_admin and complaint.user != request.user:
-        return Response(
-            {"error": "You can only view your own complaints"},
-            status=403
-        )
+    # ✅ Explicit permission check (correct for FBV)
+    for permission in request.resolver_match.func.permission_classes:
+        perm = permission()
+        if hasattr(perm, "has_object_permission"):
+            if not perm.has_object_permission(request, None, complaint):
+                return Response({"error": "You can only view your own complaints"}, status=403)
 
     return Response(ComplaintSerializer(complaint).data)
 
@@ -164,19 +163,14 @@ def complaint_update(request, complaint_id):
 
     if serializer.is_valid():
         old_status = complaint.status
+        
+        # Attach transient admin remark for signal
+        complaint._status_change_message = request.data.get(
+            "message",
+            "Status updated by admin"
+        )
+        
         complaint = serializer.save()
-
-        # Log status change
-        if 'status' in request.data and complaint.status != old_status:
-            StatusLog.objects.create(
-                complaint=complaint,
-                status=complaint.status,
-                message=request.data.get(
-                    'message',
-                    'Status updated'
-                )
-            )
-
         # Cache invalidation using roll_no
         cache.delete(f"complaints_{request.user.roll_no}")
 
