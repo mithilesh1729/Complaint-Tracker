@@ -254,3 +254,30 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+
+
+
+
+
+// ┌─────────────────────────────────────┐
+// │         FRONTEND (React/Vite)       │
+// ├─────────────────────────────────────┤
+// │  App.jsx (Routing)                  │
+// │  ├─ Login (/) → JWT auth            │
+// │  ├─ Dashboard (/dashboard) → Student│
+// │  ├─ CreateComplaint → Upload        │
+// │  └─ AdminDashboard → Manage         │
+// └────────────────────┬────────────────┘
+//                      │
+//         ┌────────────┴────────────┐
+//         │                         │
+//    API Layer              Protection
+//    ────────────           ──────────
+//    axios.js              ProtectedRoute
+//    ├─ Request            ├─ Check JWT
+//    │  interceptor        └─ Decode claims
+//    │  (Add Bearer token)
+//    │
+//    └─ Response
+//       interceptor
+//       (Refresh on 401)

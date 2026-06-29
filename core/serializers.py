@@ -120,3 +120,69 @@ class ComplaintSerializer(serializers.ModelSerializer):
     def get_status_history(self, obj):
         logs = StatusLog.objects.filter(complaint=obj).order_by('timestamp')
         return StatusLogSerializer(logs, many=True).data
+
+
+
+
+
+
+
+# ┌─────────────────────────────────────────────────────────────┐
+# │                BACKEND (Django REST Framework)              │
+# ├─────────────────────────────────────────────────────────────┤
+# │  URLs (urls.py)                                             │
+# │  ├─ /api/token/ → JWT login                                 │
+# │  ├─ /api/complaints/ → List/Create                          │
+# │  ├─ /api/complaints/<id>/ → Detail/Update/Delete            │
+# │  ├─ /api/complaints/<id>/logs/ → Status history             │
+# │  ├─ /api/complaints/<id>/slip/ → PDF download               │
+# │  └─ /api/complaints/<id>/confirm/ → Student confirmation    │
+# └─────────────────────┬───────────────────────────────────────┘
+#                       │
+#         ┌─────────────┴─────────────┐
+#         │                           │
+#    Views Layer                 Auth & Permissions
+#    ──────────────              ──────────────────
+#    views.py                    authentication.py
+#    ├─ ComplaintListView        ├─ CsrfExemptSessionAuth
+#    │  (CBV: filters,           └─ Skip CSRF for API
+#    │   pagination, cache)
+#    ├─ complaint_create         jwt_serializers.py
+#    │  (FBV: file upload)       ├─ CustomTokenObtainSerializer
+#    ├─ complaint_detail         │  (roll_no auth, custom claims)
+#    ├─ complaint_update         jwt_views.py
+#    ├─ complaint_delete         ├─ CustomTokenObtainPairView
+#    ├─ complaint_logs           permissions.py
+#    ├─ download_complaint_slip  ├─ IsOwnerOrAdmin
+#    └─ confirm_complaint_resolution
+#                                 (Object-level access)
+
+#         ┌─────────────┴─────────────┐
+#         │                           │
+#    Serialization Layer         Utilities
+#    ────────────────────         ──────────
+#    serializers.py               pagination.py
+#    ├─ ComplaintSerializer       ├─ CustomPagination (10/page)
+#    │  (nested, derived fields)  throttling.py
+#    ├─ UserSerializer            ├─ ComplaintRateThrottle (100/min)
+#    ├─ ComplaintImageSerializer  signals.py
+#    └─ StatusLogSerializer       ├─ pre_save: log status changes
+
+#         ┌─────────────┴─────────────┐
+#         │                           │
+#    Models Layer                Configuration
+#    ──────────────              ──────────────
+#    models.py                    settings/base.py
+#    ├─ User (roll_no PK)         ├─ DRF config, JWT settings
+#    ├─ Complaint (UUID ID)       settings/dev.py
+#    ├─ ComplaintImage             ├─ MySQL DB, CORS
+#    └─ StatusLog
+
+#         ┌─────────────┴─────────────┐
+#         │                           │
+#    Database Layer              Services
+#    ──────────────              ──────────
+#    MySQL                        services/pdf_service.py
+#    ├─ Indexes on status,        ├─ Generate PDF slips
+#    │  created_at                 └─ QR codes for confirmation
+#    └─ Foreign keys, constraints

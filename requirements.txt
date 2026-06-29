@@ -10,10 +10,9 @@ djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.1
 fonttools==4.61.1
 
-gunicorn>=21.2.0
-# mysqlclient==2.2.7
-Pillow>=10.0.0,<11.0.0
-psycopg2-binary>=2.9
+gunicorn==23.0.0
+Pillow==10.4.0
+psycopg2-binary==2.9.10
 
 
 pycparser==2.23

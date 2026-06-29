@@ -7,7 +7,7 @@ export const downloadComplaintSlip = async (complaintId) => {
 
   // Create file URL
   const url = window.URL.createObjectURL(
-    new Blob([response.data], { type: "application/pdf" })
+    new Blob([response.data], { type: "application/pdf" }),
   );
 
   // Create temporary <a>
