@@ -119,3 +119,28 @@ SIMPLE_JWT = {
 
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+
+
+
+
+# 8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+# Celery Configuration
+CELERY_BROKER_URL = (
+    f"redis://{os.getenv('REDIS_HOST', 'redis')}:"
+    f"{os.getenv('REDIS_PORT', 6379)}/0"
+)
+
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_TIMEZONE = TIME_ZONE
+
+
+# The Celery Worker does not exist yet.
+# We're only teaching Celery  APP:
+# "Whenever I send a task, send it to Redis."
