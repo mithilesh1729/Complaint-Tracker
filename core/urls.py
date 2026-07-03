@@ -12,3 +12,22 @@ urlpatterns = [
     path("complaints/<uuid:complaint_id>/confirm/",confirm_complaint_resolution,name="complaint-confirm"),
 
 ]
+
+
+urlpatterns += [
+    path(
+        "students/",
+        StudentAPIView.as_view(),
+        name="student-list-create",
+    ),
+    path(
+        "students/<str:roll_no>/",
+        StudentAPIView.as_view(),
+        name="student-detail",
+    ),
+    path(
+        "students/<str:roll_no>/reset-password/",
+        StudentResetPasswordAPIView.as_view(),
+        name="student-reset-password",
+    ),
+]
