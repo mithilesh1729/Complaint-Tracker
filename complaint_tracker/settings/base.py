@@ -144,3 +144,7 @@ CELERY_TIMEZONE = TIME_ZONE
 # The Celery Worker does not exist yet.
 # We're only teaching Celery  APP:
 # "Whenever I send a task, send it to Redis."
+
+
+# Celery doesn't make functions faster—it moves long-running work out of the request/response cycle so users don't have to wait.
+
