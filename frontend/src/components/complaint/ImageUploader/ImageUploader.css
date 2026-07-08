@@ -1,0 +1,49 @@
+.image-uploader {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.upload-box {
+  border: 2px dashed var(--color-border);
+
+  border-radius: var(--radius-lg);
+
+  padding: 40px;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition: var(--transition);
+}
+
+.upload-box:hover {
+  border-color: var(--color-primary);
+
+  background: var(--color-primary-light);
+}
+
+.upload-icon {
+  font-size: 44px;
+
+  color: var(--color-primary);
+
+  margin-bottom: 12px;
+}
+
+.upload-box h4 {
+  margin: 0;
+
+  color: var(--color-text);
+}
+
+.upload-box p {
+  margin: 10px 0;
+
+  color: var(--color-text-secondary);
+}
+
+.upload-box small {
+  color: var(--color-text-muted);
+}

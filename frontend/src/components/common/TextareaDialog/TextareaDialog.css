@@ -1,0 +1,53 @@
+.textarea-label {
+  display: block;
+
+  margin-bottom: 10px;
+
+  font-weight: 600;
+
+  color: var(--color-text);
+}
+
+.dialog-textarea {
+  width: 100%;
+
+  resize: vertical;
+
+  min-height: 140px;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  padding: 14px;
+
+  font-size: 15px;
+
+  color: var(--color-text);
+
+  background: var(--color-surface);
+
+  outline: none;
+
+  transition: 0.2s;
+
+  box-sizing: border-box;
+}
+
+.dialog-textarea:focus {
+  border-color: var(--color-primary);
+
+  box-shadow: 0 0 0 3px rgba(122, 23, 23, 0.12);
+}
+
+.textarea-footer {
+  margin-top: 10px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+}

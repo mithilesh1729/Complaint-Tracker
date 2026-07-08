@@ -1,0 +1,11 @@
+.raise-complaint-page {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+.complaint-card {
+  max-width: 850px;
+}

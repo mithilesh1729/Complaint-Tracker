@@ -5,43 +5,76 @@ from django.conf import settings
 from django.utils.timezone import now
 
 from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+
+from reportlab.pdfgen import canvas
+
+from reportlab.platypus import Paragraph
+from reportlab.lib.enums import TA_CENTER
 
 
-def generate_complaint_slip_pdf(complaint):
+def generate_complaint_slip_pdf(
+    complaint,
+):
     """
-    Generate a clean, professional A4 Complaint Slip PDF.
+    Professional Complaint Slip
 
-    Design goals:
-    - Clear visual hierarchy
-    - Official institute-style layout
-    - Good spacing & readability
-    - Print-friendly
+    - Official institute layout
+    - Automatic word wrapping
+    - Dynamic spacing
+    - Print friendly
     """
 
     buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+
+    c = canvas.Canvas(
+        buffer,
+        pagesize=A4,
+    )
 
     width, height = A4
 
-    # =============================
-    # Layout constants
-    # =============================
-    LEFT = 40
-    RIGHT = width - 40
+    LEFT = 45
+    RIGHT = width - 45
+
     TOP = height - 60
+
     y = TOP
 
     LABEL_X = LEFT
-    VALUE_X = LEFT + 150
+    VALUE_X = LEFT + 165
+
     LINE_GAP = 18
 
-    # ---------------- HEADER ----------------
+    styles = getSampleStyleSheet()
 
-    # Logo (top-left)
-    logo_path = os.path.join(settings.BASE_DIR, "static", "logo.png")
+    body_style = styles["BodyText"]
+    body_style.fontName = "Helvetica"
+    body_style.fontSize = 10
+    body_style.leading = 16
+
+    remark_style = styles["BodyText"]
+    remark_style.fontName = "Helvetica-Oblique"
+    remark_style.fontSize = 10
+    remark_style.leading = 15
+
+    title_style = styles["Heading2"]
+    title_style.alignment = TA_CENTER
+
+    # ==========================================================
+    # HEADER
+    # (UNCHANGED)
+    # ==========================================================
+
+    logo_path = os.path.join(
+        settings.BASE_DIR,
+        "static",
+        "logo.png",
+    )
+
     if os.path.exists(logo_path):
+
         c.drawImage(
             logo_path,
             LEFT,
@@ -52,144 +85,373 @@ def generate_complaint_slip_pdf(complaint):
             mask="auto",
         )
 
-    # 🔑 MAIN TITLE (first, biggest)
-    c.setFont("Helvetica-Bold", 20)
+    c.setFont(
+        "Helvetica-Bold",
+        20,
+    )
+
     c.drawCentredString(
         width / 2,
         y - 10,
-        "Complaint Slip"
+        "Complaint Slip",
     )
 
-    # 🔑 SUBTITLE (below title)
-    c.setFont("Helvetica-Bold", 14)
+    c.setFont(
+        "Helvetica-Bold",
+        14,
+    )
+
     c.drawCentredString(
         width / 2,
         y - 40,
-        "National Institute of Technology, Patna"
+        "National Institute of Technology, Patna",
     )
 
-    # Printed timestamp (small, metadata)
-    c.setFont("Helvetica", 9)
-    c.setFillColor(colors.grey)
+    c.setFont(
+        "Helvetica",
+        9,
+    )
+
+    c.setFillColor(
+        colors.grey,
+    )
+
     c.drawRightString(
         RIGHT,
         y - 15,
         f"Printed on: {now().strftime('%d %b %Y, %I:%M %p')}",
     )
-    c.setFillColor(colors.black)
 
-    # Divider
-    c.setLineWidth(1)
-    c.line(LEFT, y - 70, RIGHT, y - 70)
-
-    # Push content down
-    y -= 100
-
-
-    # =============================
-    # Helper functions
-    # =============================
-
-    def section(title):
-        nonlocal y
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(LEFT, y, title)
-        y -= 6
-        c.setLineWidth(0.7)
-        c.line(LEFT, y, RIGHT, y)
-        y -= 20
-
-    def row(label, value):
-        nonlocal y
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(LABEL_X, y, label)
-        c.setFont("Helvetica", 10)
-        c.drawString(VALUE_X, y, value or "-")
-        y -= LINE_GAP
-
-    def boxed_text(title, text):
-        nonlocal y
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(LABEL_X, y, title)
-        y -= 12
-
-        box_height = 80
-        c.setLineWidth(0.6)
-        c.rect(LEFT, y - box_height, RIGHT - LEFT, box_height)
-
-        c.setFont("Helvetica", 10)
-        text_y = y - 18
-        for line in (text or "").split("\n"):
-            c.drawString(LEFT + 10, text_y, line)
-            text_y -= 14
-
-        y -= box_height + 20
-
-    # =============================
-    # Complaint Information
-    # =============================
-
-    section("Complaint Information")
-    row("Complaint ID", str(complaint.complaint_id))
-    row("Status", complaint.status.replace("_", " ").title())
-    row(
-        "Created At",
-        complaint.created_at.strftime("%d %b %Y, %I:%M %p"),
+    c.setFillColor(
+        colors.black,
     )
 
-    if complaint.resolved_at:
-        row(
-            "Resolved At",
-            complaint.resolved_at.strftime("%d %b %Y, %I:%M %p"),
+    c.setLineWidth(1)
+
+    c.line(
+        LEFT,
+        y - 70,
+        RIGHT,
+        y - 70,
+    )
+
+    y -= 100
+
+    # ==========================================================
+    # Helpers
+    # ==========================================================
+
+    def section(title):
+
+        nonlocal y
+
+        c.setFont(
+            "Helvetica-Bold",
+            13,
         )
 
-    y -= 10
+        c.drawString(
+            LEFT,
+            y,
+            title,
+        )
 
-    # =============================
-    # Student Details
-    # =============================
+        y -= 20
 
-    section("Student Details")
-    row("Name", complaint.user.name)
-    row("Roll Number", complaint.user.roll_no)
-    row("Hostel", complaint.hostel)
-    row("Room Number", complaint.room_no)
-    row("Phone Number", complaint.phone_number)
 
-    y -= 10
+    def row(label, value):
 
-    # =============================
-    # Complaint Details
-    # =============================
+        nonlocal y
 
-    section("Complaint Details")
-    row("Type", complaint.complaint_type.title())
-    boxed_text("Description", complaint.description)
+        c.setFont(
+            "Helvetica-Bold",
+            10,
+        )
 
-    # =============================
-    # Admin Remarks (latest)
-    # =============================
+        c.drawString(
+            LABEL_X,
+            y,
+            label,
+        )
 
-    if getattr(complaint, "latest_admin_remark", None):
-        section("Admin Action / Remarks")
-        boxed_text("Remarks", complaint.latest_admin_remark)
+        c.setFont(
+            "Helvetica",
+            10,
+        )
 
-    # =============================
-    # Signature
-    # =============================
+        c.drawString(
+            VALUE_X,
+            y,
+            str(value) if value else "-",
+        )
 
-    y -= 40
+        y -= LINE_GAP
+
+
+    def paragraph(text):
+
+        nonlocal y
+
+        p = Paragraph(
+            (text or "-").replace("\n", "<br/>"),
+            body_style,
+        )
+
+        w, h = p.wrap(
+            RIGHT - LEFT,
+            500,
+        )
+
+        p.drawOn(
+            c,
+            LEFT,
+            y - h,
+        )
+
+        y -= h + 10
+
+
+    def latest_update():
+
+        log = (
+            complaint.status_logs
+            .order_by("-timestamp")
+            .first()
+        )
+
+        if not log:
+            return "-"
+
+        return log.message
+
+
+    def formatted_status():
+
+        return (
+            complaint.status
+            .replace("_", " ")
+            .title()
+        )
+
+
+    def formatted_priority():
+
+        return complaint.priority.title()
+
+
+    def formatted_date(dt):
+
+        if not dt:
+            return "-"
+
+        return dt.strftime(
+            "%d %b %Y, %I:%M %p"
+        )
+        
+        
+        
+        
+        
+    # ==========================================================
+    # Complaint Information
+    # ==========================================================
+
+    section(
+        "Complaint Information"
+    )
+
+    row(
+        "Complaint Number",
+        complaint.complaint_number,
+    )
+
+    row(
+        "Category",
+        complaint.category.name,
+    )
+
+    row(
+        "Priority",
+        formatted_priority(),
+    )
+
+    row(
+        "Status",
+        formatted_status(),
+    )
+
+    row(
+        "Location",
+        complaint.location_details,
+    )
+
+    row(
+        "Created On",
+        formatted_date(
+            complaint.created_at
+        ),
+    )
+
+    row(
+        "Resolved On",
+        formatted_date(
+            complaint.resolved_at
+        ),
+    )
+
+    y -= 12
+
+    # ==========================================================
+    # Student Information
+    # ==========================================================
+
+    section(
+        "Student Information"
+    )
+
+    row(
+        "Name",
+        complaint.user.name,
+    )
+
+    row(
+        "Roll Number",
+        complaint.user.roll_no,
+    )
+
+    row(
+        "Department",
+        (
+            complaint.user.department.name
+            if complaint.user.department
+            else "-"
+        ),
+    )
+
+    row(
+        "Hostel",
+        complaint.user.hostel,
+    )
+
+    row(
+        "Room Number",
+        complaint.user.room_no,
+    )
+
+    row(
+        "Phone Number",
+        complaint.user.phone_number,
+    )
+
+    y -= 12
+
+    # ==========================================================
+    # Complaint Description
+    # ==========================================================
+
+    section(
+        "Complaint Description"
+    )
+
+    paragraph(
+        complaint.description
+    )
+
+    y -= 8
+
+    # ==========================================================
+    # Latest Update
+    # ==========================================================
+
+    section(
+        "Latest Update"
+    )
+
+    latest = latest_update()
+
+    p = Paragraph(
+        latest,
+        remark_style,
+    )
+
+    w, h = p.wrap(
+        RIGHT - LEFT,
+        120,
+    )
+
+    p.drawOn(
+        c,
+        LEFT,
+        y - h,
+    )
+
+    y -= h + 25      
+    
+    
+    
+    
+        # ==========================================================
+    # Signature Section
+    # ==========================================================
+
+    # Keep signatures from going off the page
+    if y < 140:
+
+        c.showPage()
+
+        y = TOP
+
+    y -= 20
+
     c.setLineWidth(1)
-    c.line(RIGHT - 220, y, RIGHT, y)
-    c.setFont("Helvetica", 10)
-    c.drawRightString(RIGHT, y - 14, "Student Signature")
 
-    # =============================
-    # Footer
-    # =============================
+    # Student Signature
+    c.line(
+        LEFT,
+        y,
+        LEFT + 170,
+        y,
+    )
 
-    c.setFont("Helvetica", 8)
-    c.setFillColor(colors.grey)
+    c.setFont(
+        "Helvetica",
+        10,
+    )
+
+    c.drawCentredString(
+        LEFT + 85,
+        y - 15,
+        "Student Signature",
+    )
+
+    # Office Verification
+    c.line(
+        RIGHT - 170,
+        y,
+        RIGHT,
+        y,
+    )
+
+    c.drawCentredString(
+        RIGHT - 85,
+        y - 15,
+        "Office Verification",
+    )
+
+    # ==========================================================
+    # FOOTER
+    # (UNCHANGED)
+    # ==========================================================
+
+    c.setFont(
+        "Helvetica",
+        8,
+    )
+
+    c.setFillColor(
+        colors.grey,
+    )
+
     c.drawCentredString(
         width / 2,
         25,
@@ -197,8 +459,9 @@ def generate_complaint_slip_pdf(complaint):
     )
 
     c.showPage()
+
     c.save()
 
     buffer.seek(0)
-    return buffer
 
+    return buffer

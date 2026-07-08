@@ -6,7 +6,7 @@ from rest_framework import generics, filters, status
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Complaint, StatusLog, ComplaintImage
+from .models import Complaint, StatusLog, ComplaintImage, UserRole
 from .serializers import ComplaintSerializer
 from .pagination import CustomPagination
 from .throttling import ComplaintRateThrottle
@@ -31,114 +31,94 @@ from core.pagination import StandardResultsSetPagination
 
 
 from .serializers import (
-  StudentCreateSerializer, StudentListSerializer, StudentUpdateSerializer  
+  StudentCreateSerializer, StudentListSerializer, StudentUpdateSerializer  , StaffSerializer, ComplaintCategorySerializer, ProfileSerializer
 );
 from core.selectors.student_selector import StudentSelector
 from core.services.student_service import StudentService
 from core.models import Hostel
 
 
+from core.services.complaint_service import ComplaintService
+from core.services.user_service import UserService
+from core.selectors.complaint_selector import ComplaintSelector
 
 
-# Complaint List View
-# =====================================================
-class ComplaintListView(generics.ListAPIView):
-    """
-    List complaints with:
-    - Filtering
-    - Pagination
-    - Ordering
-    - Rate limiting
-    - Caching
-    - Role-based access (Admin vs Student)
 
-    JWT Authentication:
-    - request.user is populated by JWTAuthentication
-    """
-    serializer_class = ComplaintSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = CustomPagination
-    throttle_classes = [ComplaintRateThrottle]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
 
-    # Fields allowed for filtering
-    filterset_fields = ['status', 'complaint_type', 'priority', 'user__roll_no']
+# # Complaint List View
+# # =====================================================
+# class ComplaintListView(generics.ListAPIView):
+#     """
+#     List complaints with:
+#     - Filtering
+#     - Pagination
+#     - Ordering
+#     - Rate limiting
+#     - Caching
+#     - Role-based access (Admin vs Student)
 
-    # Fields allowed for ordering
-    ordering_fields = ['created_at', 'updated_at']
-    ordering = ['-created_at']
+#     JWT Authentication:
+#     - request.user is populated by JWTAuthentication
+#     """
+#     serializer_class = ComplaintSerializer
+#     permission_classes = [IsAuthenticated]
+#     pagination_class = CustomPagination
+#     throttle_classes = [ComplaintRateThrottle]
+#     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
 
-    def get_queryset(self):
-        user = self.request.user
+#     # Fields allowed for filtering
+#     filterset_fields = ['status', 'complaint_type', 'priority', 'user__roll_no']
 
-        # Using roll_no instead of user.id (custom primary key)
-        cache_key = f"complaints_{user.roll_no}"
+#     # Fields allowed for ordering
+#     ordering_fields = ['created_at', 'updated_at']
+#     ordering = ['-created_at']
 
-        cached_ids = cache.get(cache_key)
-        if cached_ids:
-            return Complaint.objects.filter(id__in=cached_ids)
+#     def get_queryset(self):
+#         user = self.request.user
 
-        # Admin sees all complaints
-        if user.is_admin:
-            queryset = Complaint.objects.all()
-        else:
-            queryset = Complaint.objects.filter(user=user)
+#         # Using roll_no instead of user.id (custom primary key)
+#         cache_key = f"complaints_{user.roll_no}"
 
-        # Cache complaint IDs for 1 minute
-        cache.set(
-            cache_key,
-            list(queryset.values_list('id', flat=True)),
-            timeout=60
-        )
+#         cached_ids = cache.get(cache_key)
+#         if cached_ids:
+#             return Complaint.objects.filter(id__in=cached_ids)
 
-        return queryset
+#         # Admin sees all complaints
+#         if user.is_admin:
+#             queryset = Complaint.objects.all()
+#         else:
+#             queryset = Complaint.objects.filter(user=user)
+
+#         # Cache complaint IDs for 1 minute
+#         cache.set(
+#             cache_key,
+#             list(queryset.values_list('id', flat=True)),
+#             timeout=60
+#         )
+
+#         return queryset
 
 
 # Create Complaint
 # =====================================================
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def complaint_create(request):
     serializer = ComplaintSerializer(
         data=request.data,
-        context={'request': request}
+        context={"request": request},
     )
 
-    if serializer.is_valid():
-        user = request.user
+    serializer.is_valid(raise_exception=True)
 
-        # Admin can create complaint on behalf of student
-        if user.is_admin and 'roll_no' in request.data:
-            user = User.objects.filter(roll_no=request.data['roll_no']).first()
-            if not user:
-                return Response(
-                    {"error": "User with this roll number does not exist"},
-                    status=400
-                )
+    complaint = serializer.save()
 
-        # Validate complaint type
-        if request.data.get('complaint_type') not in dict(Complaint.TYPE_CHOICES):
-            return Response({"error": "Invalid complaint type"}, status=400)
+    cache.delete(f"complaints_{request.user.roll_no}")
 
-        complaint = serializer.save(user=user)
-
-        # image uploads
-        images = request.FILES.getlist('images')
-        for image in images:
-            ComplaintImage.objects.create(
-                complaint=complaint,
-                image=image
-            )
-
-        # Invalidate cache using roll_no instead of user.id
-        cache.delete(f"complaints_{request.user.roll_no}")
-
-        return Response(
-            ComplaintSerializer(complaint).data,
-            status=201
-        )
-
-    return Response(serializer.errors, status=400)
+    return Response(
+        ComplaintSerializer(complaint).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 
 # Retrieve Single Complaint
@@ -276,177 +256,573 @@ def download_complaint_slip(request, complaint_id):
 
 
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def confirm_complaint_resolution(request, complaint_id):
-    complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+def confirm_complaint_resolution(
+    request,
+    complaint_id,
+):
 
-    # Only owner
+    complaint = get_object_or_404(
+        Complaint,
+        complaint_id=complaint_id,
+    )
+
     if complaint.user != request.user:
-        return Response({"detail": "Not allowed"}, status=403)
+        return Response(
+            {"detail":"Not allowed"},
+            status=403,
+        )
 
-    # ❌ Must be resolved
     if complaint.status != "resolved":
         return Response(
-            {"detail": "Complaint not resolved yet"},
-            status=400
+            {
+                "detail":"Complaint not resolved."
+            },
+            status=400,
         )
 
-    # Idempotent
     if complaint.is_confirmed:
         return Response(
-            {"detail": "Already confirmed"},
-            status=200
+            {
+                "detail":"Already confirmed."
+            },
+            status=400,
         )
 
-    # Confirm
-    complaint.is_confirmed = True
-    complaint.confirmed_at = timezone.now()
-    complaint.student_feedback = request.data.get("feedback", "")
-    complaint.save()
-
-    StatusLog.objects.create(
+    ComplaintService.confirm_resolution(
         complaint=complaint,
-        status="resolved",
-        message="Resolution confirmed by student"
+        feedback=request.data.get(
+            "feedback",
+            "",
+        ),
+    )
+
+    cache.delete(
+        f"complaints_{request.user.roll_no}"
     )
 
     return Response(
-        {"message": "Resolution confirmed"},
-        status=200
+        {
+            "message":"Complaint confirmed."
+        }
     )
-    
+
 
 
 
 # *******************************************************************************************
 
-class StudentAPIView(GenericAPIView):
+# class StudentAPIView(GenericAPIView):
 
-    permission_classes = [IsAdminUser]
-    pagination_class = StandardResultsSetPagination
+#     permission_classes = [IsAdminUser]
+#     pagination_class = StandardResultsSetPagination
 
-    def get(self, request, roll_no=None):
+#     def get(self, request, roll_no=None):
 
-        if roll_no:
-            student = StudentSelector.get_student_or_404(roll_no)
+#         if roll_no:
+#             student = StudentSelector.get_student_or_404(roll_no)
 
-            serializer = StudentListSerializer(student)
+#             serializer = StudentListSerializer(student)
 
-            return Response(serializer.data)
+#             return Response(serializer.data)
 
-        queryset = StudentSelector.list_students(
-            search=request.query_params.get("search"),
-            department=request.query_params.get("department"),
-            hostel=request.query_params.get("hostel"),
-            is_active=request.query_params.get(
-                "is_active",
-                "true",
-            ).lower() == "true",
-        )
+#         queryset = StudentSelector.list_students(
+#             search=request.query_params.get("search"),
+#             department=request.query_params.get("department"),
+#             hostel=request.query_params.get("hostel"),
+#             is_active=request.query_params.get(
+#                 "is_active",
+#                 "true",
+#             ).lower() == "true",
+#         )
 
-        page = self.paginate_queryset(queryset)
+#         page = self.paginate_queryset(queryset)
 
-        serializer = StudentListSerializer(
-            page,
-            many=True,
-        )
+#         serializer = StudentListSerializer(
+#             page,
+#             many=True,
+#         )
 
-        return self.get_paginated_response(serializer.data)
+#         return self.get_paginated_response(serializer.data)
 
-    def post(self, request):
+#     def post(self, request):
 
-        serializer = StudentCreateSerializer(
-            data=request.data
-        )
+#         serializer = StudentCreateSerializer(
+#             data=request.data
+#         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+#         serializer.is_valid(
+#             raise_exception=True
+#         )
 
-        student = serializer.save()
+#         student = serializer.save()
 
-        return Response(
-            {
-                "message": "Student created successfully.",
-                "roll_no": student.roll_no,
-                "temporary_password": student.temporary_password,
-            },
-            status=status.HTTP_201_CREATED,
-        )       
+#         return Response(
+#             {
+#                 "message": "Student created successfully.",
+#                 "roll_no": student.roll_no,
+#                 "temporary_password": student.temporary_password,
+#             },
+#             status=status.HTTP_201_CREATED,
+#         )       
         
     
-    def patch(self, request, roll_no):
+#     def patch(self, request, roll_no):
 
-        student = StudentSelector.get_student_or_404(roll_no)
+#         student = StudentSelector.get_student_or_404(roll_no)
 
-        serializer = StudentUpdateSerializer(
-            data=request.data,
-            partial=True,
-        )
+#         serializer = StudentUpdateSerializer(
+#             data=request.data,
+#             partial=True,
+#         )
 
-        serializer.is_valid(raise_exception=True)
+#         serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
+#         data = serializer.validated_data
 
-        StudentService.update_student(
-            user=student,
-            name=data.get("name", student.name),
-            email=data.get("email", student.email),
-            phone_number=data.get(
-                "phone_number",
-                student.phone_number,
-            ),
-            department=data.get(
-                "department",
-                student.department,
-            ),
-        )
+#         StudentService.update_student(
+#             user=student,
+#             name=data.get("name", student.name),
+#             email=data.get("email", student.email),
+#             phone_number=data.get(
+#                 "phone_number",
+#                 student.phone_number,
+#             ),
+#             department=data.get(
+#                 "department",
+#                 student.department,
+#             ),
+#         )
 
-        if (
-            "hostel" in data
-            or "room_no" in data
-        ):
-            StudentService.transfer_hostel(
-                user=student,
-                hostel=data.get("hostel", Hostel.objects.get(name=student.hostel)),
-                room_no=data.get("room_no", student.room_no),
-            )
+#         if (
+#             "hostel" in data
+#             or "room_no" in data
+#         ):
+#             StudentService.transfer_hostel(
+#                 user=student,
+#                 hostel=data.get("hostel", Hostel.objects.get(name=student.hostel)),
+#                 room_no=data.get("room_no", student.room_no),
+#             )
 
-        return Response(
-            {
-                "message": "Student updated successfully."
-            }
-        )  
+#         return Response(
+#             {
+#                 "message": "Student updated successfully."
+#             }
+#         )  
   
-    def delete(self, request, roll_no):
+#     def delete(self, request, roll_no):
 
-        student = StudentSelector.get_student_or_404(roll_no)
+#         student = StudentSelector.get_student_or_404(roll_no)
 
-        StudentService.deactivate_student(student)
+#         StudentService.deactivate_student(student)
 
-        return Response(
-            {
-                "message": "Student deactivated successfully."
-            }
-        )    
+#         return Response(
+#             {
+#                 "message": "Student deactivated successfully."
+#             }
+#         )    
     
     
 
 
 
-class StudentResetPasswordAPIView(APIView):
+# class StudentResetPasswordAPIView(APIView):
 
-    permission_classes = [IsAdminUser]
+#     permission_classes = [IsAdminUser]
+    
+#     def post(self, request, roll_no):
+#         student = StudentSelector.get_student_or_404(roll_no)
 
-    def post(self, request, roll_no):
+#         password = StudentService.reset_password(student)
+        
+#         return Response(
+#             {
+#                 "temporary_password": password
+#             }
+#         ) 
+        
+        
+# class HostelQueueAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-        student = StudentSelector.get_student_or_404(roll_no)
+#     def get(self, request):
 
-        password = StudentService.reset_password(student)
+#         # Only Hostel Office users
+#         if request.user.role != UserRole.HOSTEL_OFFICE:
+#             return Response(
+#                 {"detail": "Permission denied."},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
 
-        return Response(
-            {
-                "temporary_password": password
-            }
-        )        
+#         complaints = ComplaintSelector.list_hostel_queue(
+#             hostel=request.user.hostel
+#         )
+
+#         serializer = ComplaintSerializer(
+#             complaints,
+#             many=True,
+#         )
+
+#         return Response(serializer.data)   
+    
+    
+    
+
+
+# class HostelQueueAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         if request.user.role != "hostel_office":
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         complaints = ComplaintSelector.list_hostel_queue(
+#             hostel=request.user.hostel
+#         )
+
+#         serializer = ComplaintSerializer(
+#             complaints,
+#             many=True,
+#         )
+
+#         return Response(serializer.data)
+
+    
+
+# class AssignComplaintAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, complaint_id):
+
+#         if request.user.role != "hostel_office":
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         complaint = get_object_or_404(
+#             Complaint,
+#             complaint_id=complaint_id,
+#         )
+
+#         if complaint.assigned_to:
+#             return Response(
+#                 {"detail": "Already assigned."},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         ComplaintService.assign_to_me(
+#             complaint=complaint,
+#             office_user=request.user,
+#         )
+
+#         return Response(
+#             ComplaintSerializer(complaint).data
+#         )   
+        
+ 
+
+# class MyAssignedComplaintsAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         complaints = ComplaintSelector.list_my_complaints(
+#             request.user
+#         )
+
+#         serializer = ComplaintSerializer(
+#             complaints,
+#             many=True,
+#         )
+
+#         return Response(serializer.data)
+    
+    
+
+
+
+# class StaffAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         if not request.user.is_admin:
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         staff = User.objects.filter(
+#             role__in=[
+#                 "hostel_office",
+#                 "warden",
+#                 "hmc",
+#             ]
+#         ).order_by("roll_no")
+
+#         serializer = StaffSerializer(
+#             staff,
+#             many=True,
+#         )
+
+#         return Response(serializer.data)
+
+#     def post(self, request):
+
+#         if not request.user.is_admin:
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         serializer = StaffSerializer(
+#             data=request.data
+#         )
+
+#         serializer.is_valid(
+#             raise_exception=True
+#         )
+
+#         staff = serializer.save()
+
+#         return Response(
+#             {
+#                 "message": "Staff created successfully.",
+#                 "roll_no": staff.roll_no,
+#                 "temporary_password": serializer.temp_password,
+#             },
+#             status=status.HTTP_201_CREATED,
+#         )    
+                      
+
+
+
+# class StaffResetPasswordAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, roll_no):
+
+#         if not request.user.is_admin:
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         user = get_object_or_404(
+#             User,
+#             roll_no=roll_no,
+#         )
+
+#         # Safety check
+#         if user.role not in [
+#             "hostel_office",
+#             "warden",
+#             "hmc",
+#         ]:
+#             return Response(
+#                 {"detail": "Not a staff account."},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         temp_password = UserService.reset_password(user)
+
+#         return Response(
+#             {
+#                 "message": "Password reset successfully.",
+#                 "temporary_password": temp_password,
+#             }
+#         )
+        
+        
+
+# class ComplaintCategoryListAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         categories = ComplaintSelector.list_active_categories()
+
+#         serializer = ComplaintCategorySerializer(
+#             categories,
+#             many=True,
+#         )
+
+#         return Response(serializer.data)        
+    
+    
+    
+# class ResolveComplaintAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, complaint_id):
+
+#         complaint = get_object_or_404(
+#             Complaint,
+#             complaint_id=complaint_id,
+#         )
+
+#         if request.user.role != "hostel_office":
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         if complaint.assigned_to != request.user:
+#             return Response(
+#                 {
+#                     "detail": "Complaint is not assigned to you."
+#                 },
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         if complaint.status != "in_progress":
+#             return Response(
+#                 {
+#                     "detail": "Only in-progress complaints can be resolved."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         ComplaintService.resolve_complaint(
+#             complaint=complaint,
+#             remark=request.data.get(
+#                 "remark",
+#                 "Complaint resolved.",
+#             ),
+#         )
+
+#         cache.delete(
+#             f"complaints_{complaint.user.roll_no}"
+#         )
+
+#         return Response(
+#             ComplaintSerializer(complaint).data
+#         )    
+        
+        
+# class UpdateComplaintProgressAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def patch(self, request, complaint_id):
+
+#         complaint = get_object_or_404(
+#             Complaint,
+#             complaint_id=complaint_id,
+#         )
+
+#         if request.user.role != "hostel_office":
+#             return Response(
+#                 {"detail": "Permission denied"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         if complaint.assigned_to != request.user:
+#             return Response(
+#                 {
+#                     "detail": "This complaint is not assigned to you."
+#                 },
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         if complaint.status != "in_progress":
+#             return Response(
+#                 {
+#                     "detail": "Only in-progress complaints can be updated."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         ComplaintService.update_progress(
+#             complaint=complaint,
+#             priority=request.data.get(
+#                 "priority",
+#                 complaint.priority,
+#             ),
+#             remark=request.data.get(
+#                 "remark",
+#                 "Progress updated.",
+#             ),
+#         )
+
+#         cache.delete(
+#             f"complaints_{complaint.user.roll_no}"
+#         )
+
+#         return Response(
+#             ComplaintSerializer(complaint).data,
+#             status=status.HTTP_200_OK,
+#         )
+    
+    
+    
+
+# class ReopenComplaintAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, complaint_id):
+
+#         complaint = get_object_or_404(
+#             Complaint,
+#             complaint_id=complaint_id,
+#         )
+
+#         if complaint.user != request.user:
+#             return Response(
+#                 {
+#                     "detail":"Not allowed"
+#                 },
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         if complaint.status != "resolved":
+#             return Response(
+#                 {
+#                     "detail":"Only resolved complaints can be reopened."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         ComplaintService.reopen_complaint(
+#             complaint=complaint,
+#             feedback=request.data.get(
+#                 "feedback",
+#                 "",
+#             ),
+#         )
+
+#         cache.delete(
+#             f"complaints_{request.user.roll_no}"
+#         )
+
+#         return Response(
+#             ComplaintSerializer(complaint).data
+#         )  
+        
+        
+        
+        
+# class ProfileAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         serializer = ProfileSerializer(
+#             request.user
+#         )
+
+#         return Response(serializer.data)      

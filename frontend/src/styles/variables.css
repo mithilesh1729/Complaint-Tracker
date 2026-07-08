@@ -1,0 +1,58 @@
+:root {
+  /* ---------- Brand ---------- */
+  --color-primary: #7a1717;
+  --color-primary-dark: #421010;
+  --color-primary-light: #fee2e2;
+
+  /* Warm background */
+
+  --color-background: #fff8f8;
+  --color-surface: #ffffff;
+
+  /* ---------- Text ---------- */
+
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  /* ---------- Border ---------- */
+
+  --color-border: #e5e7eb;
+
+  /* ---------- Status ---------- */
+
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+
+  /* ---------- Radius ---------- */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  /* ---------- Shadow ---------- */
+
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.05);
+
+  /* ---------- Transition ---------- */
+
+  --transition: 0.25s;
+
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #92400e;
+
+  --color-info-bg: #dbeafe;
+  --color-info-text: #1d4ed8;
+
+  --color-success-bg: #dcfce7;
+  --color-success-text: #166534;
+
+  --color-purple-bg: #ede9fe;
+  --color-purple-text: #6d28d9;
+
+  --color-danger-bg: #fee2e2;
+  --color-danger-text: #b91c1c;
+}

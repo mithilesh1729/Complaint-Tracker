@@ -1,21 +1,23 @@
 import axios from "axios";
+import { storage } from "../utils/storage";
 
 const api = axios.create({
   baseURL: "http://localhost:8000/api/",
 });
 
-// 🔐 Attach access token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access");
+  const token = storage.getAccessToken();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
-// 🔁 Handle token expiry
 api.interceptors.response.use(
   (response) => response,
+
   async (error) => {
     const originalRequest = error.config;
 
@@ -23,26 +25,30 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refresh = localStorage.getItem("refresh");
+        const refresh = storage.getRefreshToken();
 
-        const res = await axios.post(
+        const response = await axios.post(
           "http://localhost:8000/api/token/refresh/",
-          { refresh }
+
+          {
+            refresh,
+          },
         );
 
-        localStorage.setItem("access", res.data.access);
+        storage.setAccessToken(response.data.access);
 
-        originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
+        originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
 
-        return api(originalRequest); // 🔁 retry
+        return api(originalRequest);
       } catch {
-        localStorage.clear();
+        storage.clear();
+
         window.location.href = "/";
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

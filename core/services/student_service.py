@@ -1,35 +1,14 @@
-import secrets
-import string
+from django.db import transaction
 from django.utils import timezone
 
-
-from django.db import transaction
-
-from core.models import (
-    User,
-    Hostel,
-    Department,
-    HostelAssignment,
-)
+from core.models import HostelAssignment,User
+from core.services.user_service import UserService
 
 
 class StudentService:
     """
     Business logic for Student Management.
     """
-
-    @staticmethod
-    def generate_temporary_password(length=10):
-        alphabet = (
-            string.ascii_letters
-            + string.digits
-            + "@#$%&!"
-        )
-
-        return "".join(
-            secrets.choice(alphabet)
-            for _ in range(length)
-        )
 
     @staticmethod
     @transaction.atomic
@@ -47,7 +26,7 @@ class StudentService:
         Creates a student along with hostel assignment.
         """
 
-        temp_password = StudentService.generate_temporary_password()
+        temp_password = UserService.generate_temporary_password()
 
         user = User.objects.create_user(
             roll_no=roll_no,
@@ -71,9 +50,7 @@ class StudentService:
         )
 
         return user, temp_password
-    
-    
-    
+
     @staticmethod
     @transaction.atomic
     def update_student(
@@ -84,18 +61,22 @@ class StudentService:
         phone_number,
         department,
     ):
-
         user.name = name
         user.email = email
         user.phone_number = phone_number
         user.department = department
 
-        user.save()
+        user.save(
+            update_fields=[
+                "name",
+                "email",
+                "phone_number",
+                "department",
+            ]
+        )
 
         return user
-    
-    
-    
+
     @staticmethod
     @transaction.atomic
     def transfer_hostel(
@@ -104,16 +85,12 @@ class StudentService:
         hostel,
         room_no,
     ):
-
-        current_assignment = (
-            HostelAssignment.objects.filter(
-                user=user,
-                is_current=True,
-            ).first()
-        )
+        current_assignment = HostelAssignment.objects.filter(
+            user=user,
+            is_current=True,
+        ).first()
 
         if current_assignment:
-
             current_assignment.is_current = False
             current_assignment.to_date = timezone.now().date()
 
@@ -143,38 +120,11 @@ class StudentService:
         )
 
         return user
-    
-    
-    
+
     @staticmethod
     def deactivate_student(user):
-        
-        user.is_active = False
+        return UserService.deactivate(user)
 
-        user.save(
-            update_fields=[
-                "is_active",
-            ]
-        )
-
-        return user
-    
     @staticmethod
     def reset_password(user):
-
-        temp_password = (
-            StudentService.generate_temporary_password()
-        )
-
-        user.set_password(temp_password)
-
-        user.must_change_password = True
-
-        user.save(
-            update_fields=[
-                "password",
-                "must_change_password",
-            ]
-        )
-
-        return temp_password
+        return UserService.reset_password(user)

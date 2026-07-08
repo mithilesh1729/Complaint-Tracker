@@ -1,0 +1,49 @@
+.navbar-brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+.navbar-brand-logo {
+  width: 46px;
+
+  height: 46px;
+
+  object-fit: contain;
+
+  flex-shrink: 0;
+
+  transition: transform var(--transition);
+}
+
+.navbar-brand:hover .navbar-brand-logo {
+  transform: rotate(-5deg) scale(1.05);
+}
+
+.navbar-brand-content {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.navbar-brand-content h1 {
+  margin: 0;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  color: var(--color-text);
+
+  line-height: 1.1;
+}
+
+.navbar-brand-content span {
+  margin-top: 3px;
+
+  font-size: 13px;
+
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,55 @@
+.dialog-message {
+  color: var(--color-text-secondary);
+
+  line-height: 1.7;
+}
+
+.dialog-btn {
+  border: none;
+
+  padding: 10px 18px;
+
+  border-radius: var(--radius-md);
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition: 0.2s;
+}
+
+.dialog-btn.secondary {
+  background: var(--color-surface-alt);
+
+  color: var(--color-text);
+}
+
+.dialog-btn.secondary:hover {
+  background: var(--color-primary-light);
+}
+
+.dialog-btn.primary {
+  background: var(--color-primary);
+
+  color: white;
+}
+
+.dialog-btn.primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.dialog-btn.danger {
+  background: var(--color-danger);
+
+  color: white;
+}
+
+.dialog-btn.danger:hover {
+  filter: brightness(0.9);
+}
+
+.dialog-btn:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}

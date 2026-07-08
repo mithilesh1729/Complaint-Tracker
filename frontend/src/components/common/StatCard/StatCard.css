@@ -1,0 +1,43 @@
+.stat-card {
+  background: var(--color-surface);
+
+  border-radius: var(--radius-lg);
+
+  padding: 24px;
+
+  box-shadow: var(--shadow-card);
+
+  transition: 0.25s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: var(--shadow-card-hover);
+}
+
+.stat-card-top {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.stat-title {
+  color: var(--color-text-secondary);
+
+  margin-bottom: 8px;
+}
+
+.stat-card h2 {
+  font-size: 34px;
+
+  color: var(--color-text);
+}
+
+.stat-icon {
+  font-size: 34px;
+
+  color: var(--color-primary);
+}

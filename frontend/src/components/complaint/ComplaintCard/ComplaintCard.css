@@ -1,0 +1,67 @@
+.complaint-card {
+  background: var(--color-surface);
+
+  padding: 20px;
+
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-card);
+
+  margin-bottom: 18px;
+
+  transition: 0.25s;
+}
+
+.complaint-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-card-hover);
+}
+
+.complaint-card-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+}
+
+.complaint-card-header h3 {
+  margin: 0;
+
+  color: var(--color-text);
+}
+
+.complaint-card-header p {
+  margin-top: 8px;
+
+  color: var(--color-text-secondary);
+}
+
+.complaint-card-footer {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-top: 20px;
+}
+
+.details-link {
+  display: flex;
+
+  gap: 8px;
+
+  align-items: center;
+
+  text-decoration: none;
+
+  color: var(--color-primary);
+
+  font-weight: 600;
+
+  transition: color 0.2s;
+}
+
+.details-link:hover {
+  color: var(--color-primary-dark);
+}

@@ -1,0 +1,19 @@
+.complaint-timeline {
+  background: var(--color-surface);
+
+  padding: 24px;
+
+  border-radius: var(--radius-lg);
+
+  margin-bottom: 24px;
+
+  box-shadow: var(--shadow-card);
+}
+
+.timeline-item {
+  border-left: 3px solid var(--color-primary);
+
+  padding-left: 16px;
+
+  margin-bottom: 20px;
+}

@@ -1,0 +1,21 @@
+.stats-card {
+  background: var(--color-surface);
+
+  border-radius: var(--radius-lg);
+
+  padding: 24px;
+
+  box-shadow: var(--shadow-card);
+}
+
+.stats-card h4 {
+  color: var(--color-text-secondary);
+
+  margin-bottom: 10px;
+}
+
+.stats-card h2 {
+  font-size: 32px;
+
+  color: var(--color-text);
+}

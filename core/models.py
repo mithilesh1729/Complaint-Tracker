@@ -28,7 +28,7 @@ class UserRole(models.TextChoices):
     HOSTEL_OFFICE = "hostel_office", "Hostel Office"
     WARDEN = "warden", "Hostel Warden"
     HMC = "hmc", "Hostel Management Committee"
-    SUPER_ADMIN = "super_admin", "Super Admin"
+    # SUPER_ADMIN = "super_admin", "Super Admin"
 
 
 # =====================================================
@@ -340,7 +340,9 @@ class Complaint(models.Model):
     complaint_number = models.CharField(
         max_length=30,
         unique=True,
+        null=True,
         blank=True,
+        editable=False,
     )
 
     # =====================================================
@@ -505,17 +507,19 @@ class StatusLog(models.Model):
     def __str__(self):
         return f"{self.complaint.complaint_id} - {self.status} at {self.timestamp}"
 
-# Signal: Initial Status Log
-# =====================================================
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
-@receiver(post_save, sender=Complaint)
-def create_status_log(sender, instance, created, **kwargs):
-    if created:
-        StatusLog.objects.create(
-            complaint=instance,
-            status=instance.status,
-            message="-",
-        )
+
+
+
+
+# Super Admin (Platform)
+#         │
+#         ├───────────────┐
+#         │               │
+#         ▼               ▼
+# Students          Staff Users
+#                        │
+#       ┌────────────────┼──────────────┐
+#       ▼                ▼              ▼
+# Hostel Office       Warden           HMC
