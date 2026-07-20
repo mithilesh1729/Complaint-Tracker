@@ -41,3 +41,24 @@ class StaffSerializer(serializers.ModelSerializer):
         self.temp_password = temp_password
 
         return user
+        
+    def update(self, instance, validated_data):
+        if "role" in validated_data:
+            instance.role = validated_data.pop("role")
+            
+        hostel = validated_data.pop("hostel", None)
+        if not hostel:
+            hostel = Hostel.objects.get(name=instance.hostel) if instance.hostel else None
+            
+        instance = StaffService.update_staff(
+            user=instance,
+            name=validated_data.get("name", instance.name),
+            email=validated_data.get("email", instance.email),
+            phone_number=validated_data.get("phone_number", instance.phone_number),
+            hostel=hostel,
+        )
+        
+        if "role" in self.initial_data:
+            instance.save(update_fields=["role"])
+            
+        return instance

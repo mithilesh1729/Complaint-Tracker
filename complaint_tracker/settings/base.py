@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
+    'drf_spectacular',
 
     'core',
 ]
@@ -73,9 +74,9 @@ AUTH_USER_MODEL = 'core.User'
 # -------------------------
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
-USE_TZ = False
+TIME_ZONE = "Asia/Kolkata"
+USE_TZ = True
 
 
 # -------------------------
@@ -83,6 +84,7 @@ USE_TZ = False
 # -------------------------
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -108,6 +110,20 @@ REST_FRAMEWORK = {
         "user": "1000/day",
         "complaints": "100/min",
     },
+    
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Hostel Complaint Tracker API',
+    'DESCRIPTION': 'API documentation for the Hostel Complaint Tracking System',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 SIMPLE_JWT = {
@@ -124,13 +140,21 @@ SIMPLE_JWT = {
 
 
 
-# 8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
 
 # Celery Configuration
 CELERY_BROKER_URL = (
     f"redis://{os.getenv('REDIS_HOST', 'redis')}:"
     f"{os.getenv('REDIS_PORT', 6379)}/0"
 )
+
+# Cache Configuration
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', 6379)}/1",
+    }
+}
 
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 

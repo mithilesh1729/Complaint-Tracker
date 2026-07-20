@@ -36,13 +36,16 @@ function RecentComplaints({ complaints = [] }) {
 
               <p>{complaint.category}</p>
             </div>
+            <div className="recent-complaint-meta">
+              <StatusBadge status={complaint.status === "resolved" && complaint.is_confirmed ? "confirmed" : complaint.status} />
 
-            <StatusBadge status={complaint.status} />
+              <span className="recent-complaint-date">
+                {new Date(complaint.created_at).toLocaleDateString()}
+              </span>
+            </div>
           </div>
 
           <div className="complaint-footer">
-            <span>{new Date(complaint.created_at).toLocaleDateString()}</span>
-
             <Link
               to={`/student/complaints/${complaint.complaint_id}`}
               className="details-link"

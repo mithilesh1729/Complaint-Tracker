@@ -1,24 +1,34 @@
+import StatusBadge from "../../common/StatusBadge";
+
 import "./ComplaintTimeline.css";
 
 function ComplaintTimeline({ complaint }) {
-  if (!complaint.status_history?.length) {
+  if (!complaint?.status_history?.length) {
     return null;
   }
 
   return (
-    <div className="complaint-timeline">
+    <section className="complaint-timeline">
       <h3>Status Timeline</h3>
 
-      {complaint.status_history.map((item, index) => (
-        <div key={index} className="timeline-item">
-          <strong>{item.status}</strong>
+      <div className="timeline">
+        {complaint.status_history.map((item, index) => (
+          <div key={index} className="timeline-item">
+            <div className="timeline-dot" />
 
-          <p>{item.message}</p>
+            <div className="timeline-content">
+              <div className="timeline-header">
+                <StatusBadge status={item.status} />
 
-          <small>{new Date(item.timestamp).toLocaleString()}</small>
-        </div>
-      ))}
-    </div>
+                <small>{new Date(item.timestamp).toLocaleString()}</small>
+              </div>
+
+              <p>{item.message}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

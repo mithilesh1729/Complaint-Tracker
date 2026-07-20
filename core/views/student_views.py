@@ -36,14 +36,19 @@ class StudentAPIView(GenericAPIView):
 
             return Response(serializer.data)
 
+        is_active_param = request.query_params.get("is_active")
+        is_active = None
+        if is_active_param:
+            if is_active_param.lower() == "true":
+                is_active = True
+            elif is_active_param.lower() == "false":
+                is_active = False
+
         queryset = StudentSelector.list_students(
             search=request.query_params.get("search"),
             department=request.query_params.get("department"),
             hostel=request.query_params.get("hostel"),
-            is_active=request.query_params.get(
-                "is_active",
-                "true",
-            ).lower() == "true",
+            is_active=is_active,
         )
 
         page = self.paginate_queryset(queryset)
@@ -121,14 +126,20 @@ class StudentAPIView(GenericAPIView):
         )  
   
     def delete(self, request, roll_no):
-
         student = StudentSelector.get_student_or_404(roll_no)
 
-        StudentService.deactivate_student(student)
+        if student.is_active:
+            from core.services.user_service import UserService
+            UserService.deactivate(student)
+        else:
+            from core.services.user_service import UserService
+            UserService.activate(student)
+            
+        action = "activated" if student.is_active else "deactivated"
 
         return Response(
             {
-                "message": "Student deactivated successfully."
+                "message": f"Student {action} successfully."
             }
         )
         

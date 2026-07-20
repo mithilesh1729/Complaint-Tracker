@@ -7,6 +7,8 @@ import {
   FaUsers,
   FaBuilding,
   FaChartBar,
+  FaTags,
+  FaUserShield,
 } from "react-icons/fa";
 
 import { ROUTES } from "../constants/routes";
@@ -15,73 +17,131 @@ import { ROLES } from "../constants/roles";
 export const NAVIGATION = {
   [ROLES.STUDENT]: [
     {
-      title: "Dashboard",
-      icon: FaHome,
+      label: "Dashboard",
       path: ROUTES.STUDENT_DASHBOARD,
+      icon: FaHome,
     },
-
     {
-      title: "Raise Complaint",
-      icon: FaPlusCircle,
+      label: "Raise Complaint",
       path: ROUTES.CREATE_COMPLAINT,
+      icon: FaPlusCircle,
     },
-
     {
-      title: "My Complaints",
-      icon: FaClipboardList,
+      label: "My Complaints",
       path: ROUTES.MY_COMPLAINTS,
+      icon: FaClipboardList,
     },
-
     {
-      title: "Profile",
-      icon: FaUser,
+      label: "Profile",
       path: ROUTES.STUDENT_PROFILE,
+      icon: FaUser,
     },
   ],
 
   [ROLES.HOSTEL_OFFICE]: [
     {
-      title: "Queue",
-      icon: FaTasks,
+      label: "Dashboard",
+      path: ROUTES.OFFICE_DASHBOARD,
+      icon: FaHome,
+    },
+    {
+      label: "Incoming Complaints",
       path: ROUTES.OFFICE_QUEUE,
-    },
-
-    {
-      title: "Assigned",
       icon: FaClipboardList,
-      path: ROUTES.OFFICE_ASSIGNED,
     },
-
     {
-      title: "Profile",
-      icon: FaUser,
+      label: "My Assigned Work",
+      path: ROUTES.OFFICE_ASSIGNED,
+      icon: FaTasks,
+    },
+    {
+      label: "Profile",
       path: ROUTES.OFFICE_PROFILE,
+      icon: FaUser,
+    },
+  ],
+
+  [ROLES.WARDEN]: [
+    {
+      label: "Dashboard",
+      path: ROUTES.WARDEN_DASHBOARD,
+      icon: FaHome,
+    },
+    {
+      label: "Escalated Queue",
+      path: ROUTES.WARDEN_QUEUE,
+      icon: FaClipboardList,
+    },
+    {
+      label: "Staff Performance",
+      path: ROUTES.WARDEN_PERFORMANCE,
+      icon: FaChartBar,
+    },
+    {
+      label: "Profile",
+      path: ROUTES.WARDEN_PROFILE,
+      icon: FaUser,
+    },
+  ],
+
+  [ROLES.HMC]: [
+    {
+      label: "Dashboard",
+      path: ROUTES.HMC_DASHBOARD,
+      icon: FaHome,
+    },
+    {
+      label: "HMC Queue",
+      path: ROUTES.HMC_QUEUE,
+      icon: FaClipboardList,
+    },
+    {
+      label: "Hostel Performance",
+      path: ROUTES.HMC_PERFORMANCE,
+      icon: FaBuilding,
+    },
+    {
+      label: "Profile",
+      path: ROUTES.HMC_PROFILE,
+      icon: FaUser,
     },
   ],
 
   [ROLES.ADMIN]: [
     {
-      title: "Students",
-      icon: FaUsers,
+      label: "Dashboard",
+      path: ROUTES.ADMIN_DASHBOARD,
+      icon: FaHome,
+    },
+    {
+      label: "Students",
       path: ROUTES.ADMIN_STUDENTS,
-    },
-
-    {
-      title: "Staff",
       icon: FaUsers,
+    },
+    {
+      label: "Staff",
       path: ROUTES.ADMIN_STAFF,
+      icon: FaUsers,
     },
-
     {
-      title: "Hostels",
-      icon: FaBuilding,
+      label: "Hostels",
       path: ROUTES.ADMIN_HOSTELS,
+      icon: FaBuilding,
     },
-
     {
-      title: "Analytics",
-      icon: FaChartBar,
+      label: "Categories",
+      path: "/admin/categories",
+      icon: FaTags,
+    },
+    {
+      label: "Reports",
       path: ROUTES.ADMIN_ANALYTICS,
+      icon: FaChartBar,
+    },
+    {
+      label: "Profile",
+      path: ROUTES.ADMIN_PROFILE,
+      icon: FaUserShield,
     },
   ],
 };

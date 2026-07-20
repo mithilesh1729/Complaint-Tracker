@@ -16,9 +16,9 @@ function ProfileCard({ profile }) {
       <div className="profile-content">
         <h2>{profile?.name}</h2>
 
-        <p className="profile-roll">{profile?.roll_no}</p>
+        {profile?.roll_no && <p className="profile-roll">{profile.roll_no}</p>}
 
-        <span className="profile-role">Student Account</span>
+        <span className="profile-role">{profile?.role || "User"}</span>
       </div>
     </section>
   );

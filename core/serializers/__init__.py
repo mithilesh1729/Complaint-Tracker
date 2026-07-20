@@ -7,3 +7,7 @@ from .student_serializers import *
 from .staff_serializers import *
 
 from .dashboard_serializers import *
+
+from .hostel_serializers import *
+
+from .complaint_list_serializers import *

@@ -1,0 +1,34 @@
+.warden-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.warden-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.warden-table th {
+  background: #f8fafc;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #1e293b;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.warden-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #475569;
+}
+
+.warden-table tr:last-child td {
+  border-bottom: none;
+}
+
+.warden-table tr:hover {
+  background: #f8fafc;
+}

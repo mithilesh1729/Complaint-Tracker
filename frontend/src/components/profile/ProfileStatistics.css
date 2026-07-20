@@ -1,0 +1,43 @@
+.profile-statistics {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: 20px;
+}
+
+.profile-stat-card {
+  background: var(--color-surface);
+
+  border-radius: var(--radius-lg);
+
+  padding: 24px;
+
+  text-align: center;
+
+  box-shadow: var(--shadow-card);
+
+  border: 1px solid var(--color-border);
+
+  transition: var(--transition);
+}
+
+.profile-stat-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-lg);
+}
+
+.profile-stat-card h2 {
+  font-size: 2rem;
+
+  color: var(--color-primary);
+
+  margin-bottom: 8px;
+}
+
+.profile-stat-card p {
+  color: var(--color-text-secondary);
+
+  font-weight: 500;
+}

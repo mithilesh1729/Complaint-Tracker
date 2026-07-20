@@ -1,0 +1,26 @@
+.admin-profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.admin-profile-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+}
+
+.admin-profile-card h3 {
+  font-size: 18px;
+  color: var(--color-text);
+  margin-bottom: 24px;
+  font-weight: 700;
+}

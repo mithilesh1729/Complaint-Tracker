@@ -1,0 +1,115 @@
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.quick-actions h2 {
+  margin: 0;
+}
+
+.quick-actions-grid {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+
+  gap: 24px;
+}
+
+.action-card {
+  background: white;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-lg);
+
+  padding: 28px;
+
+  display: flex;
+
+  gap: 20px;
+
+  transition: 0.25s;
+
+  box-shadow: var(--shadow-card);
+}
+
+.action-card:hover {
+  transform: translateY(-3px);
+
+  border-color: var(--color-primary);
+
+  box-shadow: 0 15px 30px rgba(122, 23, 23, 0.08);
+}
+
+.action-icon {
+  width: 60px;
+
+  height: 60px;
+
+  border-radius: 16px;
+
+  background: #fee2e2;
+
+  color: var(--color-primary);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 28px;
+
+  flex-shrink: 0;
+}
+
+.action-content {
+  flex: 1;
+}
+
+.action-content h3 {
+  margin: 0 0 10px;
+
+  font-size: 20px;
+}
+
+.action-content p {
+  margin: 0;
+
+  color: var(--color-text-light);
+
+  line-height: 1.6;
+}
+
+.action-link {
+  margin-top: 20px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-weight: 600;
+
+  color: var(--color-primary);
+
+  transition: 0.2s;
+}
+
+.action-link:hover {
+  gap: 12px;
+}
+
+.action-card.clickable {
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.action-card.clickable:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 12px 30px rgba(122, 23, 23, 0.12);
+}

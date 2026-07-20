@@ -1,164 +1,9 @@
-# Complaint Workflow Module
-# │
-# ├── Phase 1
-# │   Refactor Student Complaint Form
-# │   (Auto-fill profile data)
-# │
-# ├── Phase 2
-# │   Complaint Service
-# │   ├── create_complaint()
-# │   ├── assign_to_me()
-# │   ├── update_progress()
-# │   ├── resolve()
-# │   ├── confirm()
-# │   └── reopen()
-# │
-# ├── Phase 3
-# │   Hostel Office Dashboard
-# │   (Only hostel complaints)
-# │
-# ├── Phase 4
-# │   Student Dashboard
-# │   (Confirmation / Reject)
-# │
-# ├── Phase 5
-# │   Warden Dashboard
-# │
-# └── Phase 6
-#     HMC Dashboard + Analytics
-
-
-
-
-
-#                          SUPER ADMIN
-#                               │
-#                               │
-#       Creates Hostels, Departments, Categories,
-#       Hostel Office Users, Wardens, HMC Users
-#                               │
-# ────────────────────────────────────────────────────────────
-
-#                         STUDENT LOGIN
-#                               │
-#                               ▼
-#                    Click "Raise Complaint"
-#                               │
-#                               ▼
-#                  Fill ONLY these fields
-
-#                  • Complaint Category
-#                  • Description
-#                  • Location Details
-#                  • Images (Optional)
-
-#           (Everything else comes from DB)
-
-#       Name ✔
-#       Roll No ✔
-#       Hostel ✔
-#       Room ✔
-#       Department ✔
-#       Phone ✔
-
-#                               │
-#                               ▼
-#                     Complaint Submitted
-#                Status = "Pending"
-
-#                               │
-#                               ▼
-#         Automatically visible to ONLY that Hostel Office
-
-# ────────────────────────────────────────────────────────────
-
-#                   HOSTEL OFFICE DASHBOARD
-
-#           Sees complaints of THEIR hostel only
-
-#                               │
-#                               ▼
-#                      Open Complaint
-#                               │
-#                               ▼
-#                  "Assign To Me" (Office Worker)
-
-#         assigned_to = current office worker
-
-#                               │
-#                               ▼
-#                  Status → In Progress
-
-#                               │
-#                               ▼
-#                Write Remarks (multiple times)
-
-#                               │
-#                               ▼
-#           Upload Resolution Photo (optional)
-
-#                               │
-#                               ▼
-#                  Status → Resolved
-
-#                               │
-#                               ▼
-#         Student Confirmation Required
-
-# ────────────────────────────────────────────────────────────
-
-#                      STUDENT DASHBOARD
-
-# Notification:
-
-# "Your complaint has been resolved."
-
-#                               │
-#                 ┌─────────────┴─────────────┐
-#                 │                           │
-#                 ▼                           ▼
-#           Confirm                     Reject
-#                 │                           │
-#                 ▼                           ▼
-#        Complaint Closed             Back to Hostel Office
-#                                     Status = In Progress
-#                                     Student Feedback Saved
-
-# ────────────────────────────────────────────────────────────
-
-#                       HOSTEL WARDEN
-
-# Does NOT work on complaints.
-
-# Can only monitor
-
-# • Pending
-# • Long Pending
-# • Resolved
-# • Reopened
-
-# ────────────────────────────────────────────────────────────
-
-#                             HMC
-
-# Sees
-
-# • Overall Analytics
-# • Hostel Performance
-# • Resolution Time
-# • Complaint Trends
-
-
-# *********************************************************************************************
-
 from django.db import transaction
 from django.utils import timezone
 
+from rest_framework.exceptions import ValidationError
 from core.models import Complaint, StatusLog
 
-
-from django.db.models import Max
-from datetime import datetime
 
 class ComplaintService:
     """
@@ -186,7 +31,7 @@ class ComplaintService:
             hostel=user.hostel,
             room_no=user.room_no,
             phone_number=user.phone_number,
-            complaint_type=category.name,      
+            complaint_type=category.name,
             description=description,
             location_details=location_details,
             priority=priority,
@@ -217,26 +62,50 @@ class ComplaintService:
         *,
         complaint,
         office_user,
+        remark,
     ):
         """
-        Hostel office worker accepts responsibility.
+        Hostel Office accepts responsibility.
         """
+
+        if complaint.status != "pending":
+            raise ValidationError(
+                "Only pending complaints can be assigned."
+            )
+
+        if complaint.assigned_to:
+            raise ValidationError(
+                "Complaint is already assigned."
+            )
 
         complaint.assigned_to = office_user
         complaint.status = "in_progress"
+        complaint.updated_at = timezone.now()
 
-        complaint.save(
-            update_fields=[
-                "assigned_to",
-                "status",
-                "updated_at",
-            ]
-        )
+        if hasattr(complaint, "latest_admin_remark"):
+            complaint.latest_admin_remark = remark
+
+            complaint.save(
+                update_fields=[
+                    "assigned_to",
+                    "status",
+                    "latest_admin_remark",
+                    "updated_at",
+                ]
+            )
+        else:
+            complaint.save(
+                update_fields=[
+                    "assigned_to",
+                    "status",
+                    "updated_at",
+                ]
+            )
 
         StatusLog.objects.create(
             complaint=complaint,
             status="in_progress",
-            message=f"Assigned to {office_user.name}",
+            message=remark,
         )
 
         return complaint
@@ -253,18 +122,35 @@ class ComplaintService:
         Office worker updates complaint progress.
         """
 
-        complaint.priority = priority
+        if complaint.status != "in_progress":
+            raise ValidationError(
+                "Only complaints in progress can be updated."
+            )
 
-        complaint.save(
-            update_fields=[
-                "priority",
-                "updated_at",
-            ]
-        )
+        complaint.priority = priority
+        complaint.updated_at = timezone.now()
+
+        if hasattr(complaint, "latest_admin_remark"):
+            complaint.latest_admin_remark = remark
+
+            complaint.save(
+                update_fields=[
+                    "priority",
+                    "latest_admin_remark",
+                    "updated_at",
+                ]
+            )
+        else:
+            complaint.save(
+                update_fields=[
+                    "priority",
+                    "updated_at",
+                ]
+            )
 
         StatusLog.objects.create(
             complaint=complaint,
-            status=complaint.status,
+            status="in_progress",
             message=remark,
         )
 
@@ -278,19 +164,37 @@ class ComplaintService:
         remark,
     ):
         """
-        Complaint resolved by office worker.
+        Complaint resolved by Hostel Office.
         """
+
+        if complaint.status != "in_progress":
+            raise ValidationError(
+                "Only complaints in progress can be resolved."
+            )
 
         complaint.status = "resolved"
         complaint.resolved_at = timezone.now()
+        complaint.updated_at = timezone.now()
 
-        complaint.save(
-            update_fields=[
-                "status",
-                "resolved_at",
-                "updated_at",
-            ]
-        )
+        if hasattr(complaint, "latest_admin_remark"):
+            complaint.latest_admin_remark = remark
+
+            complaint.save(
+                update_fields=[
+                    "status",
+                    "resolved_at",
+                    "latest_admin_remark",
+                    "updated_at",
+                ]
+            )
+        else:
+            complaint.save(
+                update_fields=[
+                    "status",
+                    "resolved_at",
+                    "updated_at",
+                ]
+            )
 
         StatusLog.objects.create(
             complaint=complaint,
@@ -300,8 +204,6 @@ class ComplaintService:
 
         return complaint
 
-
-
     @staticmethod
     @transaction.atomic
     def confirm_resolution(
@@ -310,13 +212,19 @@ class ComplaintService:
         feedback,
     ):
         """
-        Student accepts resolution.
+        Student confirms resolution.
         """
+
+        if complaint.status != "resolved":
+            raise ValidationError(
+                "Only resolved complaints can be confirmed."
+            )
 
         complaint.is_confirmed = True
         complaint.confirmed_at = timezone.now()
         complaint.student_feedback = feedback
         complaint.closed_at = timezone.now()
+        complaint.updated_at = timezone.now()
 
         complaint.save(
             update_fields=[
@@ -344,18 +252,29 @@ class ComplaintService:
         feedback,
     ):
         """
-        Student rejects resolution.
+        Student reopens a resolved complaint.
+
+        The complaint remains assigned to the
+        same Hostel Office worker.
         """
+
+        if complaint.status != "resolved":
+            raise ValidationError(
+                "Only resolved complaints can be reopened."
+            )
 
         complaint.status = "in_progress"
         complaint.student_feedback = feedback
         complaint.is_confirmed = False
+        complaint.confirmed_at = None
+        complaint.updated_at = timezone.now()
 
         complaint.save(
             update_fields=[
                 "status",
                 "student_feedback",
                 "is_confirmed",
+                "confirmed_at",
                 "updated_at",
             ]
         )
@@ -367,15 +286,3 @@ class ComplaintService:
         )
 
         return complaint
-    
-    
-
-
-
-
-
-
-
-
-
-

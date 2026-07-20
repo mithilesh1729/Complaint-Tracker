@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:17
+    container_name: complaint-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: complaint-redis-prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: complaint-backend-prod
+    restart: unless-stopped
+    volumes:
+      - media_prod:/app/media
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: complaint-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # - "443:443" # Uncomment when SSL is ready
+    volumes:
+      - media_prod:/usr/share/nginx/html/media
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data_prod:
+  media_prod:

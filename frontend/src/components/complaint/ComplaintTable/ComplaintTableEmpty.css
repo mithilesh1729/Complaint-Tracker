@@ -1,0 +1,9 @@
+.complaint-table-empty {
+  text-align: center;
+
+  padding: 60px 20px !important;
+
+  color: #64748b;
+
+  font-size: 15px;
+}

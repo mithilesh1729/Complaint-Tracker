@@ -16,8 +16,8 @@ export default function useComplaints() {
       //   await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const data = await complaintService.getMyComplaints();
-      console.log(data);
-
+    
+      
       // DRF pagination support
       setComplaints(data.results ?? data);
 

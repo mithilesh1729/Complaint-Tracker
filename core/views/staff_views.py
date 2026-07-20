@@ -32,7 +32,9 @@ class StaffAPIView(APIView):
                 "hostel_office",
                 "warden",
                 "hmc",
-            ]
+            ],
+            is_superuser=False,
+            is_admin=False
         ).order_by("roll_no")
 
         serializer = StaffSerializer(
@@ -69,6 +71,31 @@ class StaffAPIView(APIView):
             status=status.HTTP_201_CREATED,
         )    
 
+    def patch(self, request, roll_no):
+        if not request.user.is_admin:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
+            
+        staff = get_object_or_404(User, roll_no=roll_no)
+        
+        serializer = StaffSerializer(staff, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+            
+        return Response({"message": "Staff updated successfully."})
+        
+    def delete(self, request, roll_no):
+        if not request.user.is_admin:
+            return Response({"detail": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
+            
+        staff = get_object_or_404(User, roll_no=roll_no)
+        if staff.is_active:
+            UserService.deactivate(staff)
+        else:
+            UserService.activate(staff)
+        
+        action = "activated" if staff.is_active else "deactivated"
+        return Response({"message": f"Staff {action} successfully."})
+
 
 class StaffResetPasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -111,39 +138,4 @@ class StaffResetPasswordAPIView(APIView):
         
         
         
-
-class StaffResetPasswordAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, roll_no):
-
-        if not request.user.is_admin:
-            return Response(
-                {"detail": "Permission denied"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        user = get_object_or_404(
-            User,
-            roll_no=roll_no,
-        )
-
-        # Safety check
-        if user.role not in [
-            "hostel_office",
-            "warden",
-            "hmc",
-        ]:
-            return Response(
-                {"detail": "Not a staff account."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        temp_password = UserService.reset_password(user)
-
-        return Response(
-            {
-                "message": "Password reset successfully.",
-                "temporary_password": temp_password,
-            }
-        )
+

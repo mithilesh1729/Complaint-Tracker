@@ -4,12 +4,27 @@ import { useNavigate } from "react-router-dom";
 
 import useAuth from "../../../hooks/useAuth";
 
-import "./UserMenu.css";
+import { ROLES } from "../../../constants/roles";
+import { ROUTES } from "../../../constants/routes";
+
+import "./Usermenu.css";
 
 function UserMenu() {
   const navigate = useNavigate();
 
   const { user, logout } = useAuth();
+
+  const PROFILE_ROUTES = {
+    [ROLES.STUDENT]: ROUTES.STUDENT_PROFILE,
+
+    [ROLES.HOSTEL_OFFICE]: ROUTES.OFFICE_PROFILE,
+
+    [ROLES.WARDEN]: ROUTES.WARDEN_PROFILE,
+
+    [ROLES.HMC]: ROUTES.HMC_PROFILE,
+
+    [ROLES.ADMIN]: ROUTES.ADMIN_PROFILE,
+  };
 
   const [open, setOpen] = useState(false);
 
@@ -37,13 +52,16 @@ function UserMenu() {
 
   function handleProfile() {
     setOpen(false);
-    navigate("/student/profile");
+
+    navigate(PROFILE_ROUTES[user.role] || ROUTES.LOGIN);
   }
 
   function handleLogout() {
     setOpen(false);
+
     logout();
-    navigate("/", {
+
+    navigate(ROUTES.LOGIN, {
       replace: true,
     });
   }
@@ -70,7 +88,6 @@ function UserMenu() {
         <div className="user-dropdown">
           <button type="button" onClick={handleProfile}>
             <FiUser />
-
             <span>My Profile</span>
           </button>
 
@@ -78,7 +95,6 @@ function UserMenu() {
 
           <button type="button" className="logout-item" onClick={handleLogout}>
             <FiLogOut />
-
             <span>Logout</span>
           </button>
         </div>

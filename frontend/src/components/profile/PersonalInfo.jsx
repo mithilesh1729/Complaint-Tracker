@@ -12,11 +12,13 @@ function PersonalInfo({ profile }) {
           <span className="info-value">{profile?.name}</span>
         </div>
 
-        <div className="info-item">
-          <span className="info-label">Roll Number</span>
+        {profile?.roll_no && (
+          <div className="info-item">
+            <span className="info-label">Roll Number</span>
 
-          <span className="info-value">{profile?.roll_no}</span>
-        </div>
+            <span className="info-value">{profile.roll_no}</span>
+          </div>
+        )}
 
         <div className="info-item">
           <span className="info-label">Email Address</span>
@@ -24,11 +26,13 @@ function PersonalInfo({ profile }) {
           <span className="info-value">{profile?.email}</span>
         </div>
 
-        <div className="info-item">
-          <span className="info-label">Phone Number</span>
+        {profile?.phone_number && (
+          <div className="info-item">
+            <span className="info-label">Phone Number</span>
 
-          <span className="info-value">{profile?.phone_number || "-"}</span>
-        </div>
+            <span className="info-value">{profile.phone_number}</span>
+          </div>
+        )}
       </div>
     </section>
   );

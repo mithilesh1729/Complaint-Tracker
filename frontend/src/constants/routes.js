@@ -9,13 +9,33 @@ export const ROUTES = Object.freeze({
 
   STUDENT_PROFILE: "/student/profile",
 
+  OFFICE_DASHBOARD: "/office",
+
   OFFICE_QUEUE: "/office/queue",
 
   OFFICE_ASSIGNED: "/office/assigned",
 
   OFFICE_PROFILE: "/office/profile",
 
+  WARDEN_DASHBOARD: "/warden",
+
+  WARDEN_QUEUE: "/warden/queue",
+  
+  WARDEN_PERFORMANCE: "/warden/performance",
+
+  WARDEN_PROFILE: "/warden/profile",
+
+  HMC_DASHBOARD: "/hmc",
+
+  HMC_QUEUE: "/hmc/queue",
+  
+  HMC_PERFORMANCE: "/hmc/performance",
+
+  HMC_PROFILE: "/hmc/profile",
+
   ADMIN_DASHBOARD: "/admin",
+
+  ADMIN_PROFILE: "/admin/profile",
 
   ADMIN_STUDENTS: "/admin/students",
 
@@ -23,9 +43,5 @@ export const ROUTES = Object.freeze({
 
   ADMIN_HOSTELS: "/admin/hostels",
 
-  ADMIN_ANALYTICS: "/admin/analytics",
-
-  WARDEN_DASHBOARD: "/warden",
-
-  HMC_DASHBOARD: "/hmc",
+  ADMIN_ANALYTICS: "/admin/reports",
 });

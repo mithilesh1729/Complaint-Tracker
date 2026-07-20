@@ -1,140 +1,104 @@
-# College Complaint Tracking System - Backend
+# 🏫 Hostel Complaint Tracking System
 
-This is the backend API for a complaint tracking system for college students and admins.  
-It allows students to file complaints about issues like mess, electricity, etc., and track their status. Admins can manage, update, and resolve complaints.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Django](https://img.shields.io/badge/Django-5.0-092E20.svg?logo=django)
+![React](https://img.shields.io/badge/React-18.0-61DAFB.svg?logo=react)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-336791.svg?logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker)
 
----
+A production-grade, full-stack application designed to streamline the lifecycle of university hostel maintenance and service complaints. 
 
-## Features
-
-- **User Authentication**
-  - Session-based login/logout with roll number and password.
-  - Permissions enforced to restrict data access by user role.
-
-- **Complaint Management**
-  - Students can create complaints with multiple image uploads.
-  - View their own complaints with filtering (status, type, priority).
-  - Admins can view all complaints and filter by various fields.
-  - Admins can update complaint status and priority.
-  - Complaints support pagination (10 items per page).
-  - Status updates create logs to track changes over time.
-
-- **Performance & Security**
-  - Caching complaint lists per user for 1 minute to reduce DB load.
-  - Request throttling at 100 requests per day per user.
-  - Filtering and ordering support on complaint lists.
-
-- **Admin Panel**
-  - Custom admin interface to manage Users, Complaints, Complaint Images, and Status Logs.
-  - Inline display of complaint images and status logs in admin.
-  - Color-coded complaint status in admin list view.
+This system moves beyond basic CRUD operations to implement a strict **Role-Based State Machine** spanning four distinct user tiers (Students, Hostel Office, Wardens, and HMC Core).
 
 ---
 
-## Tech Stack
+## 🎯 The Problem & The Solution
 
-- Python 3.x  
-- Django  
-- Django REST Framework  
-- Django Filters  
-- MySQL (configurable database)  
-- Django cache backend (for caching)
+**The Problem:** In many universities, hostel maintenance requests (plumbing, electrical, carpentry) are tracked on paper registers or chaotic WhatsApp groups. This leads to lost requests, zero accountability, unmeasured resolution times, and frustrated students.
 
----
-
-## API Endpoints
-
-| Endpoint                      | Method | Description                           | Permissions          |
-|-------------------------------|--------|---------------------------------------|----------------------|
-| `/api/login/`                 | POST   | Login with roll_no & password          | Public               |
-| `/api/logout/`                | POST   | Logout user                            | Authenticated        |
-| `/api/complaints/`            | GET    | List complaints (filtering, ordering, pagination) | Authenticated |
-| `/api/complaints/create/`     | POST   | Create new complaint with images       | Authenticated        |
-| `/api/complaints/<complaint_id>/` | GET | Retrieve complaint details             | Owner or Admin       |
-| `/api/complaints/<complaint_id>/update/` | PATCH | Update complaint (admin only)        | Admin                |
-| `/api/complaints/<complaint_id>/delete/` | DELETE | Delete complaint (owner or admin)    | Owner or Admin       |
+**The Solution:** A centralized, multi-tenant digital portal where:
+- **Students** have a transparent view of their request lifecycle.
+- **Hostel Office Staff** can assign and track pending tasks efficiently.
+- **Wardens & Admins (HMC)** have high-level dashboards to monitor staff performance, identify overdue complaints, and enforce accountability.
 
 ---
 
-## Testing
+## 🚀 Key Features by Role
 
-All APIs have been thoroughly tested using **Insomnia (API tool)**, **Django Admin**, and **direct browser requests**.
+### 👨‍🎓 1. Student Portal
+- **Complaint Lodging:** Upload descriptions, priority levels, and photographic evidence.
+- **Real-Time Timeline:** View exact timestamps of when a complaint was assigned, escalated, or resolved.
+- **Resolution Confirmation:** A complaint isn't fully closed until the student hits "Confirm Resolution". Otherwise, they can instantly Reopen it.
+- **Downloadable PDF Slips:** Generate official PDF receipts for lodged complaints.
 
-### 1. Create Complaint (POST)
-Successfully created a complaint with image upload.  
-Status: **201 Created**
+### 🏢 2. Hostel Office (Maintenance Staff)
+- **Task Queue:** View all incoming complaints specific to their assigned hostel.
+- **Assignment Engine:** Assign complaints to specific maintenance workers (plumbers, electricians).
+- **Progress Tracking:** Update notes as work is done (which instantly pushes to the student's timeline).
 
-![Create Complaint API](screenshots/complaint_create.png)
+### 👨‍⚖️ 3. Warden Dashboard
+- **Performance Analytics:** Track how many complaints each office staff member has resolved vs. left pending.
+- **Escalation Queue:** Handle "High Priority" complaints or complaints escalated by the office.
+- **Action Workflows:** Wardens can append remarks, send tickets back to the office, or escalate severe issues to the central HMC committee.
 
----
-
-### 2. List Complaints (GET)
-Admin fetching all complaints with pagination and filtering.
-
-![List Complaints API](screenshots/complaint_list.png)
-
----
-
-### 3. Update Complaint by Admin (PATCH)
-Admin updating complaint status to **resolved**.
-
-![Update Complaint API](screenshots/complaint_update.png)
-
----
-
-## Setup Instructions
-
-1. Clone repository and create a virtual environment:
-
-    ```bash
-    git clone <repo-url>
-    cd complaint-tracker-backend
-    python -m venv venv
-    source venv/bin/activate  # Linux/macOS
-    venv\Scripts\activate     # Windows
-    ```
-
-2. Install dependencies:
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3. Configure database settings and cache backend in `settings.py`.
-
-4. Run migrations:
-
-    ```bash
-    python manage.py migrate
-    ```
-
-5. Start development server:
-
-    ```bash
-    python manage.py runserver
-    ```
+### 🏛️ 4. HMC (Hall Management Centre) Admin
+- **Global Overview:** See metrics across *all* hostels simultaneously.
+- **Hostel Performance:** Identify which hostels are underperforming in resolution times.
+- **Force Actions:** Override capabilities to forcefully close globally escalated tickets.
 
 ---
 
-## Notes
+## 🛠️ Architecture & Documentation
 
-- **Authentication** uses Django’s session framework; clients must handle cookies (`csrftoken`, `sessionid`).
-- **Caching** improves performance by storing complaint lists per user for 1 minute.
-- **Throttling** restricts API usage to 100 requests/day per user to prevent abuse.
-- **Pagination** defaults to 10 complaints per page; configurable via query params.
-- **Admin interface** includes inline display of complaint images and status logs for easy monitoring.
+This project was built with a focus on clean architecture, robust API design, and modular UI components. 
 
----
+Dive deeper into the engineering decisions through our dedicated documentation:
 
-## Future Enhancements (Planned)
-
-- Real-time notifications on complaint status changes.
-- PDF slip generation with QR codes for complaint resolution confirmation.
-- Auto-escalation of complaints after SLA periods.
-- Frontend web application using React to consume these APIs.
+- 🏗️ **[System Architecture](docs/architecture.md):** Understand the High-Level Design (HLD) and core component interactions.
+- 🗄️ **[Database Design](docs/database.md):** View the Entity-Relationship (ER) diagram and schema rationale.
+- 🔄 **[Complaint Lifecycle & Workflows](docs/workflows.md):** Trace the exact State Machine and Sequence Diagrams for complaint resolution.
+- 🚀 **[Deployment Guide](docs/deployment.md):** Instructions for spinning up the Dockerized environment.
 
 ---
 
-Feel free to explore and contribute!
+## 🔌 API Documentation (Swagger)
+
+The backend exposes a strictly typed RESTful API. We use `drf-spectacular` to automatically generate OpenAPI 3.0 documentation.
+
+Once the backend is running, you can explore the API endpoints interactively:
+
+- **Swagger UI:** `http://localhost:8000/api/docs/`
+- **ReDoc:** `http://localhost:8000/api/redoc/`
+- **Raw OpenAPI Schema:** `http://localhost:8000/api/schema/`
 
 ---
+
+## 💻 Quickstart (Local Development)
+
+### Prerequisites
+- Docker & Docker Compose
+- Node.js (v18+)
+
+### 1. Boot up the Backend (Django + Postgres + Redis)
+```bash
+docker-compose up -d --build
+```
+*The backend will be available at `http://localhost:8000`.*
+
+### 2. Run Database Migrations & Seed Data
+```bash
+docker exec -it complaint-backend python manage.py migrate
+# Optional: Load initial data or create a superuser
+docker exec -it complaint-backend python manage.py createsuperuser
+```
+
+### 3. Boot up the Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*The frontend will be available at `http://localhost:5173`.*
+
+---
+

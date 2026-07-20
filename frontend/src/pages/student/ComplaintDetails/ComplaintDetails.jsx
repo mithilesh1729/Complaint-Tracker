@@ -10,7 +10,7 @@ import ComplaintHeader from "../../../components/complaint/ComplaintHeader";
 import ComplaintInfo from "../../../components/complaint/ComplaintInfo";
 import ComplaintImages from "../../../components/complaint/ComplaintImages";
 import ComplaintTimeline from "../../../components/complaint/ComplaintTimeline";
-import ComplaintActions from "../../../components/complaint/ComplaintActions";
+import { StudentComplaintActions } from "../../../components/complaint/ComplaintActions";
 
 import useComplaint from "../../../hooks/useComplaint";
 
@@ -57,7 +57,7 @@ function ComplaintDetails() {
 
         <ComplaintTimeline complaint={complaint} />
 
-        <ComplaintActions complaint={complaint} refresh={refresh} />
+        <StudentComplaintActions complaint={complaint} refresh={refresh} />
       </div>
     </>
   );

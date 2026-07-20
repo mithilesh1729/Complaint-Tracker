@@ -5,15 +5,81 @@
 
   border-radius: var(--radius-lg);
 
-  margin-bottom: 24px;
-
   box-shadow: var(--shadow-card);
 }
 
+.timeline {
+  position: relative;
+
+  margin-top: 24px;
+}
+
+.timeline::before {
+  content: "";
+
+  position: absolute;
+
+  left: 7px;
+
+  top: 0;
+
+  bottom: 0;
+
+  width: 2px;
+
+  background: #e5e7eb;
+}
+
 .timeline-item {
-  border-left: 3px solid var(--color-primary);
+  display: flex;
 
-  padding-left: 16px;
+  gap: 18px;
 
-  margin-bottom: 20px;
+  position: relative;
+
+  margin-bottom: 28px;
+}
+
+.timeline-dot {
+  width: 16px;
+
+  height: 16px;
+
+  border-radius: 50%;
+
+  background: #7a1717;
+
+  flex-shrink: 0;
+
+  margin-top: 6px;
+
+  z-index: 1;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 16px;
+
+  margin-bottom: 10px;
+}
+
+.timeline-content p {
+  margin: 0;
+
+  color: #555;
+
+  line-height: 1.6;
+}
+
+.timeline-content small {
+  color: #888;
 }

@@ -1,40 +1,27 @@
-# # Base Image
-# FROM python:3.12-slim
-
-# # Working Directory
-# WORKDIR /app
-
-# # Copy dependency file first
-# COPY requirements.txt .
-
-# # Install dependencies
-# RUN pip install --no-cache-dir -r requirements.txt
-
-
-# # Copy project
-# # This copies your entire project into /app.
-# COPY . .
-
-# EXPOSE 8000
-
-# # Start Django for development
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
-
-
-
-
-
 FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+# Install dependencies needed for some Python packages (e.g., psycopg2)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Collect static files (needs dummy env vars if required by settings)
+ENV DJANGO_SETTINGS_MODULE=complaint_tracker.settings.prod
+ENV SECRET_KEY=dummy-for-build
+ENV DB_NAME=dummy DB_USER=dummy DB_PASSWORD=dummy DB_HOST=dummy DB_PORT=5432 FRONTEND_URL=dummy ALLOWED_HOSTS=*
+RUN python manage.py collectstatic --noinput
+
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Make entrypoint executable
+RUN chmod +x scripts/entrypoint.sh
+
+CMD ["scripts/entrypoint.sh"]

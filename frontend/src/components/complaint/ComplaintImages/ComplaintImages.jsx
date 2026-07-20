@@ -6,7 +6,13 @@ function ComplaintImages({ complaint }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
   if (!complaint.images?.length) {
-    return null;
+    return (
+      <section className="complaint-images">
+        <h3>Attachments</h3>
+
+        <p className="empty-attachments">No attachments uploaded.</p>
+      </section>
+    );
   }
 
   return (

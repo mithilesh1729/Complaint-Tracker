@@ -63,25 +63,35 @@ urlpatterns += [
         StudentResetPasswordAPIView.as_view(),
         name="student-reset-password",
     ),
+    # path(
+    #     "office/queue/",
+    #     HostelQueueAPIView.as_view(),
+    #     name="office-queue",
+    # ),
     path(
         "office/queue/",
-        HostelQueueAPIView.as_view(),
+        OfficeQueueAPIView.as_view(),
         name="office-queue",
     ),
     path(
-        "complaints/<uuid:complaint_id>/assign/",
+        "office/complaints/<uuid:complaint_id>/assign/",
         AssignComplaintAPIView.as_view(),
         name="assign-complaint",
     ),
     path(
-        "office/my-complaints/",
-        MyAssignedComplaintsAPIView.as_view(),
-        name="my-assigned-complaints",
+        "office/assigned/",
+        OfficeAssignedComplaintsAPIView.as_view(),
+        name="office-assigned",
     ),
     path(
         "staff/",
         StaffAPIView.as_view(),
         name="staff-management",
+    ),
+    path(
+        "staff/<str:roll_no>/",
+        StaffAPIView.as_view(),
+        name="staff-detail",
     ),
     path(
         "staff/<str:roll_no>/reset-password/",
@@ -94,7 +104,32 @@ urlpatterns += [
         name="complaint-categories",
     ),
     path(
-        "complaints/<uuid:complaint_id>/resolve/",
+        "admin/categories/",
+        CategoryManagementAPIView.as_view(),
+        name="admin-categories",
+    ),
+    path(
+        "admin/categories/<int:category_id>/",
+        CategoryManagementAPIView.as_view(),
+        name="admin-category-detail",
+    ),
+    path(
+        "admin/reports/csv/",
+        AdminReportAPIView.as_view(),
+        name="admin-reports-csv",
+    ),
+    path(
+        "admin/hostels/",
+        HostelManagementAPIView.as_view(),
+        name="admin-hostels-list",
+    ),
+    path(
+        "admin/hostels/<int:hostel_id>/",
+        HostelManagementAPIView.as_view(),
+        name="admin-hostel-detail",
+    ),
+    path(
+        "office/complaints/<uuid:complaint_id>/resolve/",
         ResolveComplaintAPIView.as_view(),
         name="resolve-complaint",
     ),
@@ -104,14 +139,29 @@ urlpatterns += [
         name="update-complaint-progress",
     ),
     path(
+        "office/complaints/<uuid:complaint_id>/escalate/",
+        EscalateToWardenAPIView.as_view(),
+        name="escalate-complaint",
+    ),
+    path(
         "complaints/<uuid:complaint_id>/reopen/",
         ReopenComplaintAPIView.as_view(),
         name="reopen-complaint",
     ),
     path(
+        "complaints/<uuid:complaint_id>/confirm/",
+        ConfirmComplaintResolutionAPIView.as_view(),
+        name="confirm-complaint",
+    ),
+    path(
         "profile/",
         ProfileAPIView.as_view(),
         name="profile",
+    ),
+    path(
+        "profile/password/",
+        ChangePasswordAPIView.as_view(),
+        name="change-password",
     ),
     
     path(
@@ -119,4 +169,32 @@ urlpatterns += [
         StudentDashboardAPIView.as_view(),
         name="student-dashboard",
     ),
+    
+    path(
+        "office/dashboard/",
+        OfficeDashboardAPIView.as_view(),
+        name="office-dashboard",
+    ),
+    
+    path(
+        "admin/dashboard/",
+        AdminDashboardAPIView.as_view(),
+        name="admin-dashboard",
+    ),
+    
+    # ==========================
+    # Warden API
+    # ==========================
+    path("warden/dashboard/", WardenDashboardAPIView.as_view(), name="warden-dashboard"),
+    path("warden/queue/", WardenQueueAPIView.as_view(), name="warden-queue"),
+    path("warden/staff-performance/", WardenStaffPerformanceAPIView.as_view(), name="warden-staff-performance"),
+    path("warden/complaints/<uuid:complaint_id>/action/", WardenComplaintActionAPIView.as_view(), name="warden-action"),
+
+    # ==========================
+    # HMC API
+    # ==========================
+    path("hmc/dashboard/", HMCDashboardAPIView.as_view(), name="hmc-dashboard"),
+    path("hmc/queue/", HMCQueueAPIView.as_view(), name="hmc-queue"),
+    path("hmc/hostel-performance/", HMCHostelPerformanceAPIView.as_view(), name="hmc-hostel-performance"),
+    path("hmc/complaints/<uuid:complaint_id>/action/", HMCComplaintActionAPIView.as_view(), name="hmc-action"),
 ]

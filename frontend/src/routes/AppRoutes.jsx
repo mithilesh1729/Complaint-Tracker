@@ -21,6 +21,30 @@ import ComplaintDetails from "../pages/student/ComplaintDetails/ComplaintDetails
 import RaiseComplaint from "../pages/student/RaiseComplaint";
 
 import MyProfile from "../pages/student/Profile/MyProfile";
+import OfficeDashboard from "../pages/office/Dashboard/officeDashboard";
+import IncomingComplaints from "../pages/office/IncomingComplaints/IncomingComplaints";
+import AssignedComplaints from "../pages/office/AssignedComplaints/AssignedComplaints";
+import OfficeComplaintDetails from "../pages/office/ComplaintDetails/OfficeComplaintDetails";
+import OfficeProfile from "../pages/office/officeProfile/officeProfile";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminStudents from "../pages/admin/AdminStudents";
+import AdminStaff from "../pages/admin/AdminStaff";
+import AdminCategories from "../pages/admin/AdminCategories";
+import AdminReports from "../pages/admin/AdminReports";
+import AdminProfile from "../pages/admin/AdminProfile";
+import AdminHostels from "../pages/admin/AdminHostels";
+
+import WardenDashboard from "../pages/warden/WardenDashboard";
+import WardenQueue from "../pages/warden/WardenQueue";
+import WardenComplaintDetails from "../pages/warden/WardenComplaintDetails";
+import StaffPerformance from "../pages/warden/StaffPerformance";
+import WardenProfile from "../pages/warden/WardenProfile";
+
+import HMCDashboard from "../pages/hmc/HMCDashboard";
+import HMCQueue from "../pages/hmc/HMCQueue";
+import HMCComplaintDetails from "../pages/hmc/HMCComplaintDetails";
+import HostelPerformance from "../pages/hmc/HostelPerformance";
+import HMCProfile from "../pages/hmc/HMCProfile";
 
 function Dummy({ title }) {
   return <h2 style={{ padding: 30 }}>{title}</h2>;
@@ -58,16 +82,17 @@ function AppRoutes() {
         {/* Hostel Office */}
         <Route element={<RoleBasedRoute roles={[ROLES.HOSTEL_OFFICE]} />}>
           <Route element={<OfficeLayout />}>
-            <Route
-              path="/office"
-              element={<Dummy title="Office Dashboard" />}
-            />
+            <Route path="/office" element={<OfficeDashboard />} />
 
-            <Route path="/office/queue" element={<Dummy title="Queue" />} />
+            <Route path="/office/queue" element={<IncomingComplaints />} />
+
+            <Route path="/office/assigned" element={<AssignedComplaints />} />
+
+            <Route path="/office/profile" element={<OfficeProfile />} />
 
             <Route
-              path="/office/assigned"
-              element={<Dummy title="Assigned Complaints" />}
+              path="/office/complaints/:complaintId"
+              element={<OfficeComplaintDetails />}
             />
           </Route>
         </Route>
@@ -75,24 +100,35 @@ function AppRoutes() {
         {/* Warden */}
         <Route element={<RoleBasedRoute roles={[ROLES.WARDEN]} />}>
           <Route element={<WardenLayout />}>
-            <Route
-              path="/warden"
-              element={<Dummy title="Warden Dashboard" />}
-            />
+            <Route path="/warden" element={<WardenDashboard />} />
+            <Route path="/warden/queue" element={<WardenQueue />} />
+            <Route path="/warden/complaints/:complaintId" element={<WardenComplaintDetails />} />
+            <Route path="/warden/performance" element={<StaffPerformance />} />
+            <Route path="/warden/profile" element={<WardenProfile />} />
           </Route>
         </Route>
 
         {/* HMC */}
         <Route element={<RoleBasedRoute roles={[ROLES.HMC]} />}>
           <Route element={<HMCLayout />}>
-            <Route path="/hmc" element={<Dummy title="HMC Dashboard" />} />
+            <Route path="/hmc" element={<HMCDashboard />} />
+            <Route path="/hmc/queue" element={<HMCQueue />} />
+            <Route path="/hmc/complaints/:complaintId" element={<HMCComplaintDetails />} />
+            <Route path="/hmc/performance" element={<HostelPerformance />} />
+            <Route path="/hmc/profile" element={<HMCProfile />} />
           </Route>
         </Route>
 
         {/* Admin */}
         <Route element={<RoleBasedRoute roles={[ROLES.ADMIN]} />}>
           <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<Dummy title="Admin Dashboard" />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/students" element={<AdminStudents />} />
+            <Route path="/admin/staff" element={<AdminStaff />} />
+            <Route path="/admin/hostels" element={<AdminHostels />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/profile" element={<AdminProfile />} />
           </Route>
         </Route>
       </Route>

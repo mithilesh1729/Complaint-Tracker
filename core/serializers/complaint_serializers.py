@@ -39,6 +39,8 @@ class ComplaintCategorySerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "display_order",
+            "is_active",
         ]        
 
 
@@ -147,27 +149,16 @@ class ComplaintSerializer(serializers.ModelSerializer):
         return complaint
 
     def get_latest_admin_remark(self, obj):
-        latest_log = (
-            StatusLog.objects
-            .filter(complaint=obj)
-            .order_by("-timestamp")
-            .first()
-        )
-
-        return latest_log.message if latest_log else None
+        # Prevent N+1 by using prefetched data
+        logs = [log for log in obj.status_logs.all() if log.status in ["in_progress", "resolved"]]
+        if logs:
+            latest = sorted(logs, key=lambda x: x.timestamp, reverse=True)[0]
+            return latest.message
+        return None
 
     def get_status_history(self, obj):
-        logs = (
-            StatusLog.objects
-            .filter(complaint=obj)
-            .order_by("timestamp")
-        )
-
-        return StatusLogSerializer(
-            logs,
-            many=True,
-        ).data
-          
+        logs = sorted(obj.status_logs.all(), key=lambda x: x.timestamp)
+        return StatusLogSerializer(logs, many=True).data
     def get_fields(self):
         """
         Pass serializer context (especially request)

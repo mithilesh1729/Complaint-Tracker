@@ -2,21 +2,27 @@ import "./Sidebar.css";
 
 import { NavLink } from "react-router-dom";
 
-import { NAVIGATION } from "../../../config/navigation";
+import { useContext } from "react";
+import { AuthContext } from "../../../contexts/AuthContext";
 
-import logo from "../../../assets/logo/nitp_logo.png";
+import { NAVIGATION } from "../../../config/navigation";
+import { PORTAL_TITLES } from "../../../config/portalTitles";
+
 import student_logo from "../../../assets/logo/student_logo.png";
+import nitp_logo from "../../../assets/logo/nitp_logo.png";
 
 function Sidebar() {
-  const menu = NAVIGATION.student;
+  const { user } = useContext(AuthContext);
+  
+  const menu = NAVIGATION[user.role] || [];
 
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <img src={student_logo} alt="NIT Patna" className="sidebar-logo" />
+        <img src={student_logo} alt="Logo" className="sidebar-logo" />
 
         <div>
-          <h3>Student Portal</h3>
+          <h3>{PORTAL_TITLES[user.role]}</h3>
         </div>
       </div>
 
@@ -28,13 +34,13 @@ function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === "/student/complaints"}
               className={({ isActive }) =>
                 isActive ? "sidebar-link active" : "sidebar-link"
               }
             >
               <Icon className="sidebar-icon" />
-              <span>{item.title}</span>
+
+              <span>{item.label}</span>
             </NavLink>
           );
         })}

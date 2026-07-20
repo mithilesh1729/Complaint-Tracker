@@ -55,4 +55,15 @@
 
   --color-danger-bg: #fee2e2;
   --color-danger-text: #b91c1c;
+
+
+  
+  --color-low-bg: #dcfce7;
+  --color-low-text: #15803d;
+
+  --color-medium-bg: #fef3c7;
+  --color-medium-text: #b45309;
+
+  --color-high-bg: #fee2e2;
+  --color-high-text: #b91c1c;
 }

@@ -8,25 +8,24 @@ from core.selectors.complaint_selector import ComplaintSelector
 from core.serializers.complaint_serializers import ComplaintSerializer, ComplaintCategorySerializer
 from core.models import Complaint
 
+from core.selectors.complaint_list_selector import ComplaintListSelector
+from core.selectors.category_selector import CategorySelector
+
+
+
 
 
 from core.pagination import CustomPagination
 from core.throttling import ComplaintRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
-from core.permissions import IsOwnerOrAdmin
-
+from core.permissions import CanViewComplaint
 
 
 # ComplaintListView
-
 # ComplaintCreateAPIView
-
 # ComplaintDetailAPIView
-
 # ComplaintUpdateAPIView
-
 # ComplaintDeleteAPIView
-
 # ComplaintCategoryListAPIView
 
 
@@ -63,13 +62,11 @@ class ComplaintCreateAPIView(APIView):
 
 
 
-
-
 class ComplaintDetailAPIView(APIView):
 
     permission_classes = [
         IsAuthenticated,
-        IsOwnerOrAdmin,
+        CanViewComplaint
     ]
 
     def get(self,request,complaint_id):
@@ -179,19 +176,14 @@ class ComplaintListAPIView(generics.ListAPIView):
         if cached_ids:
             return Complaint.objects.filter(id__in=cached_ids)
 
-        # Admin sees all complaints
-        if user.is_admin:
-            queryset = Complaint.objects.all()
-        else:
-            queryset = Complaint.objects.filter(user=user)
+
         
         
         
         if user.is_admin:
-            queryset = ComplaintSelector.list_all_complaints()
+            queryset = ComplaintListSelector.get_admin_complaints()
         else:
-            queryset = ComplaintSelector.list_student_complaints(user)
-        # Cache complaint IDs for 1 minute
+            queryset = ComplaintListSelector.get_student_complaints(user)
         cache.set(
             cache_key,
             list(queryset.values_list('id', flat=True)),
@@ -206,7 +198,7 @@ class ComplaintCategoryListAPIView(APIView):
 
     def get(self, request):
 
-        categories = ComplaintSelector.list_active_categories()
+        categories = CategorySelector.list_active_categories()
 
         serializer = ComplaintCategorySerializer(
             categories,

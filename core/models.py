@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
 import uuid
-
+from django.db.models import Count
 
 
 # =====================================================
@@ -44,13 +44,11 @@ class ComplaintPriority(models.TextChoices):
 # Complaint Status
 # =====================================================
 class ComplaintStatus(models.TextChoices):
-    SUBMITTED = "submitted", "Submitted"
-    UNDER_REVIEW = "under_review", "Under Review"
+    PENDING = "pending", "Pending"
     IN_PROGRESS = "in_progress", "In Progress"
     RESOLVED = "resolved", "Resolved"
-    WAITING_CONFIRMATION = "waiting_confirmation", "Waiting Student Confirmation"
-    CLOSED = "closed", "Closed"
-    REOPENED = "reopened", "Reopened"
+    ESCALATED_WARDEN = "escalated_warden", "Escalated to Warden"
+    ESCALATED_HMC = "escalated_hmc", "Escalated to HMC"
 
 
 
@@ -136,15 +134,22 @@ class CustomUserManager(UserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, roll_no, email=None, password=None, **extra_fields):
+    def create_superuser(
+        self,
+        roll_no,
+        email=None,
+        password=None,
+        **extra_fields,
+    ):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-
-        # Temporary
         extra_fields.setdefault("is_admin", True)
 
-        # New Role System
-        extra_fields.setdefault("role", UserRole.SUPER_ADMIN)
+        # Temporary until Platform Admin is introduced.
+        extra_fields.setdefault(
+            "role",
+            UserRole.HOSTEL_OFFICE,
+        )
 
         return self.create_user(
             roll_no,
@@ -285,19 +290,120 @@ class HostelAssignment(TimeStampedModel):
         return f"{self.user.roll_no} → {self.hostel.name}"
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+     
+class ComplaintQuerySet(models.QuerySet):
+    """
+    Reusable query helpers for Complaint.
+    """
+
+    def pending(self):
+        return self.filter(
+            status=ComplaintStatus.PENDING,
+        )
+
+    def in_progress(self):
+        return self.filter(
+            status=ComplaintStatus.IN_PROGRESS,
+        )
+
+    def resolved(self):
+        return self.filter(
+            status=ComplaintStatus.RESOLVED,
+        )
+
+    def confirmed(self):
+        return self.filter(
+            is_confirmed=True,
+        )
+
+    def unresolved(self):
+        return self.exclude(
+            status=ComplaintStatus.RESOLVED,
+        )
+
+    def escalated_warden(self):
+        return self.filter(
+            status=ComplaintStatus.ESCALATED_WARDEN,
+        )
+        
+    def escalated_hmc(self):
+        return self.filter(
+            status=ComplaintStatus.ESCALATED_HMC,
+        )
+
+    def high_priority(self):
+        return self.filter(
+            priority=ComplaintPriority.HIGH,
+        )
+
+    def unassigned(self):
+        return self.filter(
+            assigned_to__isnull=True,
+        )
+
+    def assigned(self):
+        return self.exclude(
+            assigned_to__isnull=True,
+        )
+
+    def for_user(self, user):
+        return self.filter(
+            user=user,
+        )
+
+    def assigned_to(self, user):
+        return self.filter(
+            assigned_to=user,
+        )
+
+    def latest(self):
+        return self.order_by(
+            "-created_at",
+        )
+
+    def with_related(self):
+        return self.select_related(
+            "user",
+            "category",
+            "assigned_to",
+        )
+
+    def dashboard_stats(self):
+        """
+        Aggregate statistics for Student Dashboard.
+        """
+
+        stats = self.aggregate(
+            total=Count("id"),
+
+            pending=Count(
+                "id",
+                filter=models.Q(
+                    status=ComplaintStatus.PENDING,
+                ),
+            ),
+
+            in_progress=Count(
+                "id",
+                filter=models.Q(
+                    status=ComplaintStatus.IN_PROGRESS,
+                ),
+            ),
+
+            resolved=Count(
+                "id",
+                filter=models.Q(
+                    status=ComplaintStatus.RESOLVED,
+                ),
+            ),
+        )
+
+        stats["active"] = (
+            stats["pending"] +
+            stats["in_progress"]
+        )
+
+        return stats
     
     
 
@@ -305,19 +411,12 @@ class HostelAssignment(TimeStampedModel):
 # Complaint Model
 # =====================================================
 class Complaint(models.Model):
-
+    
+    objects = ComplaintQuerySet.as_manager()
     # ---------- Legacy Choices (Will be removed in V3) ----------
-    STATUS_CHOICES = (
-        ("pending", "Pending"),
-        ("in_progress", "In Progress"),
-        ("resolved", "Resolved"),
-    )
+    STATUS_CHOICES = ComplaintStatus.choices
 
-    PRIORITY_CHOICES = (
-        ("low", "Low"),
-        ("medium", "Medium"),
-        ("high", "High"),
-    )
+    PRIORITY_CHOICES = ComplaintPriority.choices
 
     TYPE_CHOICES = (
         ("mess", "Mess"),
@@ -411,14 +510,14 @@ class Complaint(models.Model):
 
     status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending",
+        choices=ComplaintStatus.choices,
+        default=ComplaintStatus.PENDING,
     )
 
     priority = models.CharField(
         max_length=20,
-        choices=PRIORITY_CHOICES,
-        default="medium",
+        choices=ComplaintPriority.choices,
+        default=ComplaintPriority.MEDIUM,
     )
 
     # =====================================================
@@ -453,6 +552,13 @@ class Complaint(models.Model):
     student_feedback = models.TextField(blank=True)
 
     # =====================================================
+    # Escalation Remarks
+    # =====================================================
+    
+    warden_remark = models.TextField(blank=True)
+    hmc_remark = models.TextField(blank=True)
+
+    # =====================================================
     # Internal Status Tracking
     # =====================================================
 
@@ -477,6 +583,9 @@ class Complaint(models.Model):
             models.Index(fields=["status"]),
             models.Index(fields=["created_at"]),
             models.Index(fields=["priority"]),
+            models.Index(fields=["user", "status"]),
+            models.Index(fields=["assigned_to"]),
+            models.Index(fields=["complaint_number"]),
         ]
 
 
@@ -500,7 +609,10 @@ class StatusLog(models.Model):
     complaint = models.ForeignKey(
         Complaint, on_delete=models.CASCADE, related_name="status_logs"
     )
-    status = models.CharField(max_length=20, choices=Complaint.STATUS_CHOICES)
+    status = models.CharField(
+        max_length=20,
+        choices=ComplaintStatus.choices,
+    )
     message = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 

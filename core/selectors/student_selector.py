@@ -15,7 +15,7 @@ class StudentSelector:
     ):
         queryset = (
             User.objects
-            .filter(role=UserRole.STUDENT)
+            .filter(role=UserRole.STUDENT, is_superuser=False, is_admin=False)
             .select_related("department")
             .order_by("roll_no")
         )

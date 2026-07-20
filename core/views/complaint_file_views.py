@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from core.permissions import IsOwnerOrAdmin
+from core.permissions import CanViewComplaint
 
 from core.serializers.complaint_serializers import StatusLogSerializer
 
@@ -24,7 +24,8 @@ class ComplaintLogsAPIView(APIView):
 
     permission_classes = [
         IsAuthenticated,
-        IsOwnerOrAdmin,
+        CanViewComplaint
+        
     ]
 
     def get(
@@ -64,7 +65,7 @@ class ComplaintSlipAPIView(APIView):
 
     permission_classes = [
         IsAuthenticated,
-        IsOwnerOrAdmin,
+        CanViewComplaint
     ]
 
     def get(
