@@ -17,18 +17,18 @@ graph TD
     Client_HMC[HMC Admin Portal]
 
     %% Frontend App
-    subgraph Frontend [React SPA (Vite)]
+    subgraph Frontend ["React SPA (Vite)"]
         UI_Components[React UI Components]
         State_Mgmt[Context / Custom Hooks]
         Axios[Axios HTTP Client]
     end
 
     %% Backend API
-    subgraph Backend [Django REST Framework]
+    subgraph Backend ["Django REST Framework"]
         API_Gateway[URL Router]
         Auth[JWT Authentication]
         
-        subgraph Business_Logic
+        subgraph Business_Logic ["Business Logic"]
             Views[API Views / Controllers]
             Services[Service Layer]
             Selectors[Selector Layer]
@@ -38,7 +38,7 @@ graph TD
     end
 
     %% Storage & Cache
-    subgraph Data_Layer
+    subgraph Data_Layer ["Data Layer"]
         PostgreSQL[(PostgreSQL DB)]
         Redis[(Redis Cache)]
     end

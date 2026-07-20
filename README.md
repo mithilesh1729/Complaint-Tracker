@@ -10,6 +10,8 @@ A production-grade, full-stack application designed to streamline the lifecycle 
 
 This system moves beyond basic CRUD operations to implement a strict **Role-Based State Machine** spanning four distinct user tiers (Students, Hostel Office, Wardens, and HMC Core).
 
+![Login Portal Preview](docs/images/login-preview.png)
+
 ---
 
 ## 🎯 The Problem & The Solution

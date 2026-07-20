@@ -1,42 +1,86 @@
 .login-page {
   min-height: 100vh;
-
   display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
   background: var(--color-background);
 }
 
-.login-card {
-  width: 420px;
-
-  background: var(--color-surface);
-
-  padding: 40px;
-
-  border-radius: var(--radius-xl);
-
-  box-shadow: var(--shadow-card);
+.login-left {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: none;
 }
 
-.login-card h1 {
-  font-size: 28px;
+@media (min-width: 900px) {
+  .login-left {
+    display: block;
+  }
+}
 
+.login-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-right-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-header {
+  margin-bottom: auto;
   text-align: center;
+}
 
+.login-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.login-header p {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.login-footer {
+  margin-top: auto;
+  text-align: center;
+}
+
+.login-footer p {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.login-card {
+  width: 100%;
+  background: var(--color-surface);
+  padding: 40px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  margin: 40px 0;
+}
+
+.login-card h2 {
+  font-size: 28px;
+  text-align: center;
   color: var(--color-text);
 }
 
 .login-card p {
   text-align: center;
-
   color: var(--color-text-secondary);
-
   margin-top: 8px;
-
   margin-bottom: 32px;
 }
 

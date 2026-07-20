@@ -10,14 +10,14 @@ This document outlines the deployment strategy for the Hostel Complaint Tracking
 graph TD
     Client[Web Browser] --> Nginx[Nginx Reverse Proxy]
     
-    subgraph Container_Cluster
+    subgraph Container_Cluster ["Container Cluster"]
         Nginx --> Frontend[React / Nginx Static Container]
         Nginx --> Gunicorn[Django / Gunicorn Backend]
         
         Gunicorn --> Celery_Worker[Celery Background Workers]
     end
     
-    subgraph Managed_Services
+    subgraph Managed_Services ["Managed Services"]
         Gunicorn --> Postgres[(Managed PostgreSQL)]
         Gunicorn --> Redis[(Managed Redis)]
         Celery_Worker --> Redis

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import useAuth from "../../hooks/useAuth";
 
+import bgImage from "../../assets/images/nit-patna.jpg";
+
 import "./Login.css";
 
 function Login() {
@@ -57,39 +59,52 @@ function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <h1>Complaint Management System</h1>
+      <div className="login-left" style={{ backgroundImage: `url(${bgImage})` }}>
+      </div>
 
-        <p>National Institute of Technology Patna</p>
-
-        {error && <div className="login-error">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Roll Number</label>
-
-            <input
-              value={rollNo}
-              onChange={(e) => setRollNo(e.target.value)}
-              placeholder="Enter Roll Number"
-            />
+      <div className="login-right">
+        <div className="login-right-wrapper">
+          <div className="login-header">
+            <h1>Hostel Complaint Tracking System</h1>
+            <p>National Institute of Technology Patna</p>
           </div>
 
-          <div className="form-group">
-            <label>Password</label>
+          <div className="login-card">
+          <h2>Welcome Back</h2>
+          <p>Sign in to your account</p>
 
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter Password"
-            />
-          </div>
+          {error && <div className="login-error">{error}</div>}
 
-          <button className="login-button" disabled={loading}>
-            {loading ? "Signing In..." : "Login"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Roll Number</label>
+              <input
+                value={rollNo}
+                onChange={(e) => setRollNo(e.target.value)}
+                placeholder="Enter Roll Number"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter Password"
+              />
+            </div>
+
+            <button className="login-button" disabled={loading}>
+              {loading ? "Signing In..." : "Login"}
+            </button>
+          </form>
+        </div>
+
+        <div className="login-footer">
+          <p>&copy; {new Date().getFullYear()} NIT Patna. All rights reserved.</p>
+        </div>
+        </div>
       </div>
     </div>
   );
