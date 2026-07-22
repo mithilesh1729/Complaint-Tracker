@@ -56,5 +56,3 @@ Thumbs.db
 *.swp
 *.tmp
 
-complaint_tracker/settings/prod.py
-.env
