@@ -30,19 +30,19 @@ Hostel Management Centre
 National Institute of Technology Patna
     """
     
+    # Log the email FIRST so admin can always see credentials
+    EmailLog.objects.create(
+        recipient=user_email,
+        subject=subject,
+        body=message
+    )
+    
     send_mail(
         subject=subject,
         message=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user_email],
-        fail_silently=False,
-    )
-    
-    # Log the email for dev/admin viewing
-    EmailLog.objects.create(
-        recipient=user_email,
-        subject=subject,
-        body=message
+        fail_silently=True,
     )
 
 @shared_task
@@ -70,16 +70,17 @@ Hostel Management Centre
 National Institute of Technology Patna
     """
     
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user_email],
-        fail_silently=False,
-    )
-    
+    # Log the email FIRST
     EmailLog.objects.create(
         recipient=user_email,
         subject=subject,
         body=message
     )
+    
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user_email],
+        fail_silently=True,
+    )
