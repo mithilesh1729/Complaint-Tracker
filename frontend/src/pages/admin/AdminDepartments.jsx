@@ -51,9 +51,9 @@ function AdminDepartments() {
 
   const handleToggleActive = async (id, currentState) => {
     try {
-      await api.delete(`/admin/departments/${id}/`);
-      showToast(currentState ? "Department deactivated" : "Department activated", "success");
-      fetchDepartments(search);
+      await api.patch(`/admin/departments/${id}/`, { is_active: !currentState });
+      showToast(!currentState ? "Department activated" : "Department deactivated", "success");
+      await fetchDepartments(search);
     } catch (err) {
       showToast("Failed to change department status", "error");
     }

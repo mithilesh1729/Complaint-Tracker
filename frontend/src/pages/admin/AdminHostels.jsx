@@ -51,9 +51,9 @@ function AdminHostels() {
 
   const handleToggleActive = async (id, currentState) => {
     try {
-      await api.delete(`/admin/hostels/${id}/`);
-      showToast(currentState ? "Hostel deactivated" : "Hostel activated", "success");
-      fetchHostels(search);
+      await api.patch(`/admin/hostels/${id}/`, { is_active: !currentState });
+      showToast(!currentState ? "Hostel activated" : "Hostel deactivated", "success");
+      await fetchHostels(search);
     } catch (err) {
       showToast("Failed to change hostel status", "error");
     }

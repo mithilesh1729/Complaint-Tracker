@@ -61,9 +61,9 @@ function AdminCategories() {
 
   const handleToggleActive = async (id, currentState) => {
     try {
-      await api.delete(`/admin/categories/${id}/`);
-      showToast(currentState ? "Category deactivated" : "Category activated", "success");
-      await fetchCategories(); // Ensure we await the fetch
+      await api.patch(`/admin/categories/${id}/`, { is_active: !currentState });
+      showToast(!currentState ? "Category activated" : "Category deactivated", "success");
+      await fetchCategories();
     } catch (err) {
       showToast("Failed to change category status", "error");
     }
