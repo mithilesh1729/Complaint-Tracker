@@ -104,4 +104,4 @@ class StudentUpdateSerializer(serializers.Serializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ["id", "name"]
+        fields = ["id", "code", "name", "is_active"]

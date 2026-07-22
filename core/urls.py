@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import *
-from core.views.department_views import DepartmentListAPIView
+from core.views.department_views import DepartmentManagementAPIView
 
 
 urlpatterns = [
@@ -111,8 +111,13 @@ urlpatterns = [
     ),
     path(
         "admin/departments/",
-        DepartmentListAPIView.as_view(),
+        DepartmentManagementAPIView.as_view(),
         name="admin-departments-list",
+    ),
+    path(
+        "admin/departments/<int:department_id>/",
+        DepartmentManagementAPIView.as_view(),
+        name="admin-department-detail",
     ),
     path(
         "office/complaints/<uuid:complaint_id>/resolve/",
