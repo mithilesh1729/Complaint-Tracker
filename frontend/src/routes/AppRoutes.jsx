@@ -34,6 +34,7 @@ import AdminReports from "../pages/admin/AdminReports";
 import AdminProfile from "../pages/admin/AdminProfile";
 import AdminHostels from "../pages/admin/AdminHostels";
 import AdminDepartments from "../pages/admin/AdminDepartments";
+import AdminEmails from "../pages/admin/AdminEmails";
 
 import WardenDashboard from "../pages/warden/WardenDashboard";
 import WardenQueue from "../pages/warden/WardenQueue";
