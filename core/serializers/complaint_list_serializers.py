@@ -6,7 +6,7 @@ from core.models import ComplaintCategory
 from core.utils.time import humanize_datetime
 
 
-class ComplaintCategorySerializer(serializers.ModelSerializer):
+class ComplaintCategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComplaintCategory
 
@@ -26,7 +26,7 @@ class ComplaintListSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
-    category = ComplaintCategorySerializer(
+    category = ComplaintCategoryListSerializer(
         read_only=True,
     )
 
