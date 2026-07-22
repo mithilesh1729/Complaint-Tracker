@@ -4,6 +4,7 @@ import ProfileCard from "../../components/profile/ProfileCard";
 import PersonalInfo from "../../components/profile/PersonalInfo";
 import HostelInfo from "../../components/profile/HostelInfo";
 import ProfileStatistics from "../../components/profile/ProfileStatistics";
+import ChangePasswordForm from "../../components/profile/ChangePasswordForm";
 
 import useProfile from "../../hooks/useProfile";
 
@@ -38,6 +39,7 @@ function WardenProfile() {
       <PersonalInfo profile={profile} />
       <HostelInfo profile={profile} />
       <ProfileStatistics profile={profile} />
+      <ChangePasswordForm />
     </div>
   );
 }

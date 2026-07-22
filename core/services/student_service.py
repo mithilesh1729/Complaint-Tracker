@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from core.models import HostelAssignment,User
 from core.services.user_service import UserService
+from core.tasks import send_credentials_email_task
 
 
 class StudentService:
@@ -48,6 +49,8 @@ class StudentService:
             from_date=timezone.now().date(),
             is_current=True,
         )
+
+        send_credentials_email_task.delay(user.email, user.name, temp_password, is_reset=False)
 
         return user, temp_password
 
@@ -127,4 +130,6 @@ class StudentService:
 
     @staticmethod
     def reset_password(user):
-        return UserService.reset_password(user)
+        user, temp_password = UserService.reset_password(user)
+        send_credentials_email_task.delay(user.email, user.name, temp_password, is_reset=True)
+        return user, temp_password

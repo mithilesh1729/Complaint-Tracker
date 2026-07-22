@@ -28,6 +28,21 @@ class StudentCreateSerializer(serializers.Serializer):
         max_length=10
     )
 
+    def validate_email(self, value):
+        if not value.endswith("@nitp.ac.in"):
+            raise serializers.ValidationError("Email must end with @nitp.ac.in")
+        return value
+
+    def validate_roll_no(self, value):
+        if User.objects.filter(roll_no=value).exists():
+            raise serializers.ValidationError(f"User with Roll No {value} already exists.")
+        return value
+
+    def validate_phone_number(self, value):
+        if value and (not value.isdigit() or len(value) != 10):
+            raise serializers.ValidationError("Phone number must be exactly 10 digits.")
+        return value
+
     def create(self, validated_data):
         user, password = StudentService.create_student(
             **validated_data

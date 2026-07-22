@@ -1,17 +1,3 @@
-# AssignComplaintAPIView
-
-# MyAssignedComplaintsAPIView
-
-# ResolveComplaintAPIView
-
-# UpdateComplaintProgressAPIView
-
-
-
-# ReopenComplaintAPIView
-
-# HostelQueueAPIView
-
 from django.core.cache import cache
 
 from rest_framework import status
@@ -31,6 +17,7 @@ from core.selectors.complaint_selector import ComplaintSelector
 
 from core.services.complaint_service import ComplaintService
 from core.serializers.complaint_serializers import ComplaintSerializer
+from core.tasks import send_complaint_status_email_task
 
 
 
@@ -75,12 +62,6 @@ class ReopenComplaintAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, complaint_id):
-
-        # complaint = get_object_or_404(
-        #     Complaint,
-        #     complaint_id=complaint_id,
-        # )
-        
         complaint = ComplaintSelector.get_complaint_or_404(
                 complaint_id
         )
@@ -269,6 +250,14 @@ class EscalateToWardenAPIView(APIView):
             message=f"Escalated to Warden by {request.user.name}. Remark: {remark}"
         )
 
+        send_complaint_status_email_task.delay(
+            user_email=complaint.user.email,
+            name=complaint.user.name,
+            complaint_number=complaint.complaint_number,
+            new_status=ComplaintStatus.ESCALATED_WARDEN,
+            category_name=complaint.category.name,
+        )
+
         cache.delete(f"complaints_{complaint.user.roll_no}")
         return Response(ComplaintSerializer(complaint,context={"request": request},).data)
 
@@ -304,6 +293,11 @@ class AssignComplaintAPIView(APIView):
             "",
         ).strip()
 
+        priority = request.data.get(
+            "priority",
+            complaint.priority,
+        )
+
         if not remark:
             return Response(
                 {
@@ -316,6 +310,7 @@ class AssignComplaintAPIView(APIView):
             complaint=complaint,
             office_user=request.user,
             remark=remark,
+            priority=priority,
         )
 
         cache.delete(
@@ -329,25 +324,45 @@ class AssignComplaintAPIView(APIView):
         
         
         
-class HostelQueueAPIView(APIView):
+class HostelQueueAPIView(ListAPIView):
+    """
+    Pending complaints for the current hostel queue.
+    """
     permission_classes = [
         IsAuthenticated,
         IsHostelOffice,
     ]
 
-    def get(self, request):
+    serializer_class = ComplaintSerializer
+    pagination_class = ComplaintPagination
 
-        complaints = ComplaintListSelector.get_office_queue(
-            hostel=request.user.hostel
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter,
+    ]
+
+    filterset_class = ComplaintFilter
+
+    search_fields = [
+        "complaint_number",
+        "user__name",
+        "category__name",
+    ]
+
+    ordering_fields = [
+        "created_at",
+        "priority",
+    ]
+
+    ordering = [
+        "-created_at",
+    ]
+
+    def get_queryset(self):
+        return ComplaintListSelector.get_office_queue(
+            hostel=self.request.user.hostel
         )
-
-        serializer = ComplaintSerializer(
-            complaints,
-            context={"request": request},
-            many=True,
-        )
-
-        return Response(serializer.data)          
 
 
 

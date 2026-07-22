@@ -32,6 +32,7 @@ function IncomingComplaints() {
   } = useIncomingComplaints();
 
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [priority, setPriority] = useState("medium");
 
   const { loading: assigning, assign } = useAssignComplaint(refresh);
 
@@ -46,6 +47,7 @@ function IncomingComplaints() {
   async function handleAssign(remark) {
     const result = await assign(selectedComplaint.complaint_id, {
       remark,
+      priority,
     });
 
     if (result.success) {
@@ -58,7 +60,10 @@ function IncomingComplaints() {
       label: "Assign",
       icon: FiUserCheck,
       variant: "primary",
-      onClick: (complaint) => setSelectedComplaint(complaint),
+      onClick: (complaint) => {
+        setSelectedComplaint(complaint);
+        setPriority(complaint.priority);
+      },
     },
   ];
 
@@ -116,7 +121,22 @@ function IncomingComplaints() {
         loading={assigning}
         onCancel={() => setSelectedComplaint(null)}
         onConfirm={handleAssign}
-      />
+      >
+        <div style={{ marginBottom: '15px' }}>
+          <label className="textarea-label" style={{ display: 'block', marginBottom: '5px' }}>
+            Set Priority
+          </label>
+          <select 
+            value={priority} 
+            onChange={(e) => setPriority(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </TextareaDialog>
     </div>
   );
 }

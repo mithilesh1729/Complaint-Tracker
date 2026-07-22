@@ -65,6 +65,20 @@ function ComplaintForm() {
         />
       </div>
 
+      {/* Priority */}
+      <div className="form-group">
+        <label>Priority</label>
+        <select
+          value={form.priority}
+          onChange={(e) => handleChange("priority", e.target.value)}
+          className="priority-select"
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+
       {/* Description */}
 
       <div className="form-group">

@@ -34,7 +34,7 @@ class UserService:
             ]
         )
 
-        return password
+        return user, password
 
     @staticmethod
     def deactivate(user):

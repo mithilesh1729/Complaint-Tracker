@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from core.models import Complaint, User, ComplaintStatus, UserRole
 from core.pagination import StandardResultsSetPagination
 from core.serializers import ComplaintListSerializer
+from core.tasks import send_complaint_status_email_task
 
 class IsWarden(IsAuthenticated):
     def has_permission(self, request, view):
@@ -105,5 +106,14 @@ class WardenComplaintActionAPIView(APIView):
             status=complaint.status,
             message=message
         )
+        
+        if action in ["send_back", "escalate_hmc"]:
+            send_complaint_status_email_task.delay(
+                user_email=complaint.user.email,
+                name=complaint.user.name,
+                complaint_number=complaint.complaint_number,
+                new_status=complaint.status,
+                category_name=complaint.category.name,
+            )
         
         return Response({"message": message})

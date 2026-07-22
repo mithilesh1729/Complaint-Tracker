@@ -64,9 +64,8 @@ class StaffAPIView(APIView):
 
         return Response(
             {
-                "message": "Staff created successfully.",
+                "message": "Staff created successfully. Credentials sent via email.",
                 "roll_no": staff.roll_no,
-                "temporary_password": serializer.temp_password,
             },
             status=status.HTTP_201_CREATED,
         )    
@@ -124,18 +123,11 @@ class StaffResetPasswordAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        temp_password = UserService.reset_password(user)
+        from core.services.staff_service import StaffService
+        user, temp_password = StaffService.reset_password(user)
 
         return Response(
             {
-                "message": "Password reset successfully.",
-                "temporary_password": temp_password,
+                "message": "Password reset successfully. Credentials sent via email."
             }
-        )
-        
-        
-        
-        
-        
-        
-
+        )

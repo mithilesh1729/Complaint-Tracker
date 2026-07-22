@@ -11,6 +11,7 @@ import "./ComplaintActions.css";
 
 function OfficeComplaintActions({ complaint, refresh }) {
   const [assignOpen, setAssignOpen] = useState(false);
+  const [priority, setPriority] = useState(complaint.priority);
 
   const [progressOpen, setProgressOpen] = useState(false);
   const [resolveOpen, setResolveOpen] = useState(false);
@@ -30,6 +31,7 @@ function OfficeComplaintActions({ complaint, refresh }) {
   async function handleAssign(remark) {
     const result = await assignComplaint(complaint.complaint_id, {
       remark,
+      priority,
     });
 
     if (result.success) {
@@ -159,7 +161,22 @@ function OfficeComplaintActions({ complaint, refresh }) {
         loading={loading}
         onCancel={() => setAssignOpen(false)}
         onConfirm={handleAssign}
-      />
+      >
+        <div style={{ marginBottom: '15px' }}>
+          <label className="textarea-label" style={{ display: 'block', marginBottom: '5px' }}>
+            Set Priority
+          </label>
+          <select 
+            value={priority} 
+            onChange={(e) => setPriority(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </TextareaDialog>
 
       <TextareaDialog
         open={progressOpen}

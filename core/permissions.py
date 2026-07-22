@@ -36,21 +36,6 @@ class IsAdmin(BasePermission):
             request.user.is_authenticated
             and request.user.is_superuser
         )
-        
-        
-# class IsOwnerOrAdmin(permissions.BasePermission):
-#     """
-#     Allow access if user is admin or object owner.
-#     Assumes obj has a `.user` field.
-#     """
-#     def has_object_permission(self, request, view, obj):
-#         if request.user.is_admin:
-#             return True
-#         return obj.user == request.user
-
-
-
-from rest_framework import permissions
 
 
 class CanViewComplaint(permissions.BasePermission):
@@ -83,8 +68,8 @@ class CanViewComplaint(permissions.BasePermission):
         if obj.user == user:
             return True
 
-        # Assigned Hostel Office
-        if obj.assigned_to == user:
+        # Hostel Office can view complaints from their hostel
+        if user.role == UserRole.HOSTEL_OFFICE and obj.hostel == user.hostel:
             return True
             
         # Warden can view complaints from their hostel

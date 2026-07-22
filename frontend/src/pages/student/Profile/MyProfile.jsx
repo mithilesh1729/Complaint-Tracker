@@ -6,6 +6,7 @@ import ErrorState from "../../../components/common/ErrorState";
 import ProfileCard from "../../../components/profile/ProfileCard";
 import PersonalInfo from "../../../components/profile/PersonalInfo";
 import HostelInfo from "../../../components/profile/HostelInfo";
+import ChangePasswordForm from "../../../components/profile/ChangePasswordForm";
 
 import useProfile from "../../../hooks/useProfile";
 
@@ -40,6 +41,8 @@ function MyProfile() {
       <PersonalInfo profile={profile} />
 
       <HostelInfo profile={profile} />
+      
+      <ChangePasswordForm />
     </div>
   );
 }

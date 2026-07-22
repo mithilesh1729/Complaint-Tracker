@@ -22,6 +22,7 @@ export default function useComplaintForm() {
     category_id: "",
     location_details: "",
     description: "",
+    priority: "medium",
     images: [],
   });
 
@@ -65,11 +66,10 @@ export default function useComplaintForm() {
     const formData = new FormData();
 
     formData.append("category_id", form.category_id);
-
     formData.append("location_details", form.location_details);
-
     formData.append("description", form.description);
-
+    formData.append("priority", form.priority);
+    
     form.images.forEach((image) => formData.append("images", image));
 
     try {

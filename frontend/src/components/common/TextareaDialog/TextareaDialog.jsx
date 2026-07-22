@@ -17,6 +17,7 @@ function TextareaDialog({
   maxLength = 500,
   onConfirm,
   onCancel,
+  children,
 }) {
   const [value, setValue] = useState("");
 
@@ -61,6 +62,7 @@ function TextareaDialog({
         </>
       }
     >
+      {children}
       <label className="textarea-label">{label}</label>
 
       <textarea

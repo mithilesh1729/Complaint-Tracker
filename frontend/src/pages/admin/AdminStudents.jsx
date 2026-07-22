@@ -3,6 +3,8 @@ import useStudents from "../../hooks/useStudents";
 import DataTable from "../../components/common/DataTable/DataTable";
 import PageHeader from "../../components/layout/PageHeader";
 import Toast from "../../components/common/Toast/Toast";
+import UserCreateModal from "../../components/admin/UserCreateModal";
+import UserEditModal from "../../components/admin/UserEditModal";
 import api from "../../api/axios";
 import useToast from "../../hooks/useToast";
 
@@ -11,6 +13,10 @@ function AdminStudents() {
   const { toast, showToast } = useToast();
   
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -30,7 +36,7 @@ function AdminStudents() {
   const handleResetPassword = async (rollNo) => {
     try {
       const res = await api.post(`/students/${rollNo}/reset-password/`);
-      showToast(`Password reset! New Temp Pass: ${res.data.temporary_password}`, "success");
+      showToast(res.data.message || "Password reset credentials sent via email.", "success");
     } catch (err) {
       showToast("Failed to reset password", "error");
     }
@@ -56,6 +62,16 @@ function AdminStudents() {
       render: (row) => (
         <div className="table-actions">
           <button 
+            className="table-action-button primary" 
+            onClick={() => {
+              setSelectedUser(row);
+              setIsEditModalOpen(true);
+            }}
+            title="Edit Student"
+          >
+            Edit
+          </button>
+          <button 
             className="table-action-button secondary" 
             onClick={() => handleResetPassword(row.roll_no)}
             title="Reset Password"
@@ -80,6 +96,11 @@ function AdminStudents() {
       <PageHeader 
         title="Student Management" 
         subtitle="Manage student accounts and access"
+        action={
+          <button className="table-action-button primary" onClick={() => setIsModalOpen(true)}>
+            + Add Student
+          </button>
+        }
       />
 
       <div className="complaint-table-container mb-4" style={{ padding: "20px" }}>
@@ -106,6 +127,35 @@ function AdminStudents() {
       />
       
       <Toast {...toast} />
+
+      <UserCreateModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          showToast("Student created successfully. Credentials sent via email.", "success");
+          fetchStudents();
+        }}
+        userType="student"
+      />
+
+      {selectedUser && (
+        <UserEditModal 
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+            showToast("Student updated successfully.", "success");
+            fetchStudents();
+          }}
+          userType="student"
+          initialData={selectedUser}
+        />
+      )}
     </div>
   );
 }

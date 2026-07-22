@@ -62,5 +62,25 @@ services:
       - db
       - redis
 
+  celery_worker:
+    build: .
+    container_name: complaint-celery
+    command: celery -A complaint_tracker worker -l info
+    volumes:
+      - .:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: complaint_tracker.settings.dev
+      DB_NAME: complaint_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db 
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - db
+      - redis
+      - backend
+
 volumes:
   postgres_data:

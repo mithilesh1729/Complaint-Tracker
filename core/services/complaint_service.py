@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from rest_framework.exceptions import ValidationError
 from core.models import Complaint, StatusLog
+from core.tasks import send_complaint_status_email_task
 
 
 class ComplaintService:
@@ -63,6 +64,7 @@ class ComplaintService:
         complaint,
         office_user,
         remark,
+        priority=None,
     ):
         """
         Hostel Office accepts responsibility.
@@ -80,6 +82,8 @@ class ComplaintService:
 
         complaint.assigned_to = office_user
         complaint.status = "in_progress"
+        if priority:
+            complaint.priority = priority
         complaint.updated_at = timezone.now()
 
         if hasattr(complaint, "latest_admin_remark"):
@@ -89,6 +93,7 @@ class ComplaintService:
                 update_fields=[
                     "assigned_to",
                     "status",
+                    "priority",
                     "latest_admin_remark",
                     "updated_at",
                 ]
@@ -98,6 +103,7 @@ class ComplaintService:
                 update_fields=[
                     "assigned_to",
                     "status",
+                    "priority",
                     "updated_at",
                 ]
             )
@@ -106,6 +112,14 @@ class ComplaintService:
             complaint=complaint,
             status="in_progress",
             message=remark,
+        )
+
+        send_complaint_status_email_task.delay(
+            user_email=complaint.user.email,
+            name=complaint.user.name,
+            complaint_number=complaint.complaint_number,
+            new_status="in_progress",
+            category_name=complaint.category.name,
         )
 
         return complaint
@@ -200,6 +214,14 @@ class ComplaintService:
             complaint=complaint,
             status="resolved",
             message=remark,
+        )
+
+        send_complaint_status_email_task.delay(
+            user_email=complaint.user.email,
+            name=complaint.user.name,
+            complaint_number=complaint.complaint_number,
+            new_status="resolved",
+            category_name=complaint.category.name,
         )
 
         return complaint

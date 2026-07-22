@@ -1,8 +1,10 @@
 import axios from "axios";
 import { storage } from "../utils/storage";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/";
+
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/",
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use((config) => {
@@ -28,7 +30,7 @@ api.interceptors.response.use(
         const refresh = storage.getRefreshToken();
 
         const response = await axios.post(
-          "http://localhost:8000/api/token/refresh/",
+          `${API_BASE_URL}token/refresh/`,
 
           {
             refresh,

@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import useStaff from "../../hooks/useStaff";
 import PageHeader from "../../components/layout/PageHeader";
 import Toast from "../../components/common/Toast/Toast";
+import UserCreateModal from "../../components/admin/UserCreateModal";
+import UserEditModal from "../../components/admin/UserEditModal";
 import api from "../../api/axios";
 import useToast from "../../hooks/useToast";
 import DataTable from "../../components/common/DataTable/DataTable";
@@ -11,6 +13,10 @@ function AdminStaff() {
   const { toast, showToast } = useToast();
   
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const filteredStaff = useMemo(() => {
     if (!search) return staff;
@@ -33,7 +39,7 @@ function AdminStaff() {
   const handleResetPassword = async (rollNo) => {
     try {
       const res = await api.post(`/staff/${rollNo}/reset-password/`);
-      showToast(`Password reset! New Temp Pass: ${res.data.temporary_password}`, "success");
+      showToast(res.data.message || "Password reset credentials sent via email.", "success");
     } catch (err) {
       showToast("Failed to reset password", "error");
     }
@@ -59,6 +65,16 @@ function AdminStaff() {
       render: (row) => (
         <div className="table-actions">
           <button 
+            className="table-action-button primary" 
+            onClick={() => {
+              setSelectedUser(row);
+              setIsEditModalOpen(true);
+            }}
+            title="Edit Staff"
+          >
+            Edit
+          </button>
+          <button 
             className="table-action-button secondary" 
             onClick={() => handleResetPassword(row.roll_no)}
             title="Reset Password"
@@ -83,6 +99,11 @@ function AdminStaff() {
       <PageHeader 
         title="Staff Management" 
         subtitle="Manage hostel office and warden accounts"
+        action={
+          <button className="table-action-button primary" onClick={() => setIsModalOpen(true)}>
+            + Add Staff
+          </button>
+        }
       />
 
       <div className="complaint-table-container mb-4" style={{ padding: "20px" }}>
@@ -106,6 +127,35 @@ function AdminStaff() {
       />
       
       <Toast {...toast} />
+
+      <UserCreateModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          showToast("Staff created successfully. Credentials sent via email.", "success");
+          fetchStaff();
+        }}
+        userType="staff"
+      />
+
+      {selectedUser && (
+        <UserEditModal 
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+            showToast("Staff updated successfully.", "success");
+            fetchStaff();
+          }}
+          userType="staff"
+          initialData={selectedUser}
+        />
+      )}
     </div>
   );
 }

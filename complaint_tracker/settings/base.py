@@ -5,8 +5,20 @@ load_dotenv()
 
 from pathlib import Path
 from datetime import timedelta
+import sentry_sdk
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# -------------------------
+# Sentry Configuration
+# -------------------------
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
 
 
 # -------------------------
@@ -22,7 +34,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
     'drf_spectacular',
@@ -147,6 +158,10 @@ CELERY_BROKER_URL = (
     f"redis://{os.getenv('REDIS_HOST', 'redis')}:"
     f"{os.getenv('REDIS_PORT', 6379)}/0"
 )
+
+# Email Configuration (Console for dev/testing)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@nitp.ac.in"
 
 # Cache Configuration
 CACHES = {

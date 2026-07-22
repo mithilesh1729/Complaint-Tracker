@@ -45,6 +45,7 @@ class ComplaintListSerializer(serializers.ModelSerializer):
             "complaint_id",
             "complaint_number",
             "student_name",
+            "hostel",
             "category",
             "priority",
             "status",

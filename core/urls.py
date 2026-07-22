@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from core.views.department_views import DepartmentListAPIView
 
 
 urlpatterns = [
@@ -22,10 +23,7 @@ urlpatterns = [
         ComplaintDeleteAPIView.as_view(),
     ),
 
-    path(
-        "complaint-categories/",
-        ComplaintCategoryListAPIView.as_view(),
-    ),
+
     path(
         "complaints/<uuid:complaint_id>/logs/",
         ComplaintLogsAPIView.as_view(),
@@ -51,11 +49,6 @@ urlpatterns = [
         StudentResetPasswordAPIView.as_view(),
         name="student-reset-password",
     ),
-    # path(
-    #     "office/queue/",
-    #     HostelQueueAPIView.as_view(),
-    #     name="office-queue",
-    # ),
     path(
         "office/queue/",
         OfficeQueueAPIView.as_view(),
@@ -115,6 +108,11 @@ urlpatterns = [
         "admin/hostels/<int:hostel_id>/",
         HostelManagementAPIView.as_view(),
         name="admin-hostel-detail",
+    ),
+    path(
+        "admin/departments/",
+        DepartmentListAPIView.as_view(),
+        name="admin-departments-list",
     ),
     path(
         "office/complaints/<uuid:complaint_id>/resolve/",

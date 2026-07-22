@@ -3,6 +3,7 @@ import PageHeader from "../../components/layout/PageHeader";
 import ProfileCard from "../../components/profile/ProfileCard";
 import PersonalInfo from "../../components/profile/PersonalInfo";
 import ProfileStatistics from "../../components/profile/ProfileStatistics";
+import ChangePasswordForm from "../../components/profile/ChangePasswordForm";
 
 import useProfile from "../../hooks/useProfile";
 
@@ -36,6 +37,7 @@ function HMCProfile() {
       <ProfileCard profile={profile} />
       <PersonalInfo profile={profile} />
       <ProfileStatistics profile={profile} />
+      <ChangePasswordForm />
     </div>
   );
 }

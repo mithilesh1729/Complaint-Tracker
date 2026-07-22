@@ -46,9 +46,6 @@ import HMCComplaintDetails from "../pages/hmc/HMCComplaintDetails";
 import HostelPerformance from "../pages/hmc/HostelPerformance";
 import HMCProfile from "../pages/hmc/HMCProfile";
 
-function Dummy({ title }) {
-  return <h2 style={{ padding: 30 }}>{title}</h2>;
-}
 
 function AppRoutes() {
   return (

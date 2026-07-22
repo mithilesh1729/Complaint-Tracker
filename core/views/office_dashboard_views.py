@@ -11,9 +11,6 @@ from core.selectors.office_dashboard_selector import (
 from core.serializers.office_dashboard_serializers import (
     OfficeDashboardSerializer,
 )
-from django.utils.decorators import method_decorator
-
-from django.views.decorators.cache import cache_page
 
 class OfficeDashboardAPIView(APIView):
     """
@@ -25,7 +22,6 @@ class OfficeDashboardAPIView(APIView):
         IsHostelOffice,
     ]
 
-    @method_decorator(cache_page(60))
     def get(self, request):
         dashboard = (
             OfficeDashboardSelector.get_dashboard(

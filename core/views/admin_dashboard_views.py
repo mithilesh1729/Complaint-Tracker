@@ -17,7 +17,7 @@ class AdminDashboardAPIView(APIView):
         IsAdminUser,
     ]
 
-    @method_decorator(cache_page(60))
+    @method_decorator(cache_page(300))
     def get(self, request):
         dashboard = AdminDashboardSelector.get_dashboard()
 

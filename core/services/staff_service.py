@@ -2,6 +2,7 @@ from django.db import transaction
 
 from core.models import User
 from core.services.user_service import UserService
+from core.tasks import send_credentials_email_task
 
 class StaffService:
     """
@@ -32,6 +33,14 @@ class StaffService:
             must_change_password=True,
         )
 
+        send_credentials_email_task.delay(user.email, user.name, temp_password, is_reset=False)
+
+        return user, temp_password
+
+    @staticmethod
+    def reset_password(user):
+        user, temp_password = UserService.reset_password(user)
+        send_credentials_email_task.delay(user.email, user.name, temp_password, is_reset=True)
         return user, temp_password
 
     @staticmethod

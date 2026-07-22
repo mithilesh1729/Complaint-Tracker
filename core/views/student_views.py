@@ -74,9 +74,8 @@ class StudentAPIView(GenericAPIView):
 
         return Response(
             {
-                "message": "Student created successfully.",
+                "message": "Student created successfully. Credentials sent via email.",
                 "roll_no": student.roll_no,
-                "temporary_password": student.temporary_password,
             },
             status=status.HTTP_201_CREATED,
         )       
@@ -156,10 +155,10 @@ class StudentResetPasswordAPIView(APIView):
     def post(self, request, roll_no):
         student = StudentSelector.get_student_or_404(roll_no)
 
-        password = StudentService.reset_password(student)
+        user, password = StudentService.reset_password(student)
         
         return Response(
             {
-                "temporary_password": password
+                "message": "Password reset successfully. Credentials sent via email."
             }
         ) 

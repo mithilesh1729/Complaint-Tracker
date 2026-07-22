@@ -100,25 +100,6 @@ class ComplaintCategory(TimeStampedModel):
 
 
 
-# # Custom User Manager
-# # =====================================================
-# class CustomUserManager(UserManager):
-#     def create_superuser(self, roll_no, email, password=None, **extra_fields):
-#         extra_fields.setdefault("is_staff", True)
-#         extra_fields.setdefault("is_superuser", True)
-
-#         if not roll_no:
-#             raise ValueError("The roll_no field must be set")
-#         if not email:
-#             raise ValueError("The Email field must be set")
-
-#         user = self.model(roll_no=roll_no, email=email, **extra_fields)
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-
-
-
 class CustomUserManager(UserManager):
     def create_user(self, roll_no, email=None, password=None, **extra_fields):
         if not roll_no:
