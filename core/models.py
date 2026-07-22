@@ -601,9 +601,20 @@ class StatusLog(models.Model):
         return f"{self.complaint.complaint_id} - {self.status} at {self.timestamp}"
 
 
+# =====================================================
+# Email Log (Development/Admin Tools)
+# =====================================================
+class EmailLog(TimeStampedModel):
+    recipient = models.EmailField()
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
 
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name_plural = "Email Logs"
 
-
+    def __str__(self):
+        return f"To: {self.recipient} - {self.subject}"
 
 
 # Super Admin (Platform)
