@@ -36,10 +36,14 @@ X_FRAME_OPTIONS = 'DENY'
 
 # If HTTPS is handled by a load balancer/Nginx, these may need adjusting
 # depending on your exact SSL termination setup.
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "False") == "True"
+SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "False") == "True"
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
+
+CSRF_TRUSTED_ORIGINS = [
+    os.environ["FRONTEND_URL"].rstrip("/"),
+]
 
 # -------------------------
 # CORS
