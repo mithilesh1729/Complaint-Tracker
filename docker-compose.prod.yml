@@ -33,6 +33,7 @@ services:
     restart: unless-stopped
     volumes:
       - media_prod:/app/media
+      - static_prod:/app/staticfiles
     env_file:
       - .env
     depends_on:
@@ -52,6 +53,7 @@ services:
       # - "443:443" # Uncomment when SSL is ready
     volumes:
       - media_prod:/usr/share/nginx/html/media
+      - static_prod:/usr/share/nginx/html/static
     depends_on:
       - backend
 
@@ -64,6 +66,7 @@ services:
     command: celery -A complaint_tracker worker -l info
     volumes:
       - media_prod:/app/media
+      - static_prod:/app/staticfiles
     env_file:
       - .env
     depends_on:
@@ -77,3 +80,4 @@ services:
 volumes:
   postgres_data_prod:
   media_prod:
+  static_prod:
