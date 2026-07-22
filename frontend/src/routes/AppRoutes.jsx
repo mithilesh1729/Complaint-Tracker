@@ -33,6 +33,7 @@ import AdminCategories from "../pages/admin/AdminCategories";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminProfile from "../pages/admin/AdminProfile";
 import AdminHostels from "../pages/admin/AdminHostels";
+import AdminDepartments from "../pages/admin/AdminDepartments";
 
 import WardenDashboard from "../pages/warden/WardenDashboard";
 import WardenQueue from "../pages/warden/WardenQueue";
@@ -123,6 +124,7 @@ function AppRoutes() {
             <Route path="/admin/students" element={<AdminStudents />} />
             <Route path="/admin/staff" element={<AdminStaff />} />
             <Route path="/admin/hostels" element={<AdminHostels />} />
+            <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/profile" element={<AdminProfile />} />

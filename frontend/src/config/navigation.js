@@ -129,6 +129,11 @@ export const NAVIGATION = {
       icon: FaBuilding,
     },
     {
+      label: "Departments",
+      path: "/admin/departments",
+      icon: FaBuilding,
+    },
+    {
       label: "Categories",
       path: "/admin/categories",
       icon: FaTags,
