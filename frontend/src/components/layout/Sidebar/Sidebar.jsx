@@ -11,13 +11,13 @@ import { PORTAL_TITLES } from "../../../config/portalTitles";
 import student_logo from "../../../assets/logo/student_logo.png";
 import nitp_logo from "../../../assets/logo/nitp_logo.png";
 
-function Sidebar() {
+function Sidebar({ isCollapsed }) {
   const { user } = useContext(AuthContext);
   
   const menu = NAVIGATION[user.role] || [];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-brand">
         <img src={student_logo} alt="Logo" className="sidebar-logo" />
 

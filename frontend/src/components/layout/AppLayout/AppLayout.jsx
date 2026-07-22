@@ -1,15 +1,22 @@
+import { useState } from "react";
 import "./AppLayout.css";
 
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 
 function AppLayout({ children }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <>
-      <Navbar />
+      <Navbar toggleCollapse={toggleCollapse} />
 
-      <div className="layout">
-        <Sidebar />
+      <div className={`layout ${isCollapsed ? 'collapsed' : ''}`}>
+        <Sidebar isCollapsed={isCollapsed} />
 
         <main>{children}</main>
       </div>

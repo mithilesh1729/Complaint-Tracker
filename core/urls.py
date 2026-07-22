@@ -1,9 +1,15 @@
 from django.urls import path
 from .views import *
 from core.views.department_views import DepartmentManagementAPIView
+from core.views.dev_views import EmailLogAPIView
 
 
 urlpatterns = [
+    path(
+        "admin/dev/emails/",
+        EmailLogAPIView.as_view(),
+        name="admin-dev-emails",
+    ),
     path(
         "complaints/",
         ComplaintListAPIView.as_view(),

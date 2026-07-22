@@ -1,6 +1,7 @@
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
+from core.models import EmailLog
 
 @shared_task
 def send_credentials_email_task(user_email, name, raw_password, is_reset=False):
@@ -36,6 +37,13 @@ National Institute of Technology Patna
         recipient_list=[user_email],
         fail_silently=False,
     )
+    
+    # Log the email for dev/admin viewing
+    EmailLog.objects.create(
+        recipient=user_email,
+        subject=subject,
+        body=message
+    )
 
 @shared_task
 def send_complaint_status_email_task(user_email, name, complaint_number, new_status, category_name):
@@ -68,4 +76,10 @@ National Institute of Technology Patna
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user_email],
         fail_silently=False,
+    )
+    
+    EmailLog.objects.create(
+        recipient=user_email,
+        subject=subject,
+        body=message
     )

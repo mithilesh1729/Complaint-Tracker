@@ -17,7 +17,8 @@ function AdminCategories() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    display_order: 0
+    display_order: 0,
+    is_active: true
   });
 
   const handleOpenModal = (category = null) => {
@@ -26,11 +27,12 @@ function AdminCategories() {
       setFormData({
         name: category.name,
         description: category.description,
-        display_order: category.display_order
+        display_order: category.display_order,
+        is_active: category.is_active
       });
     } else {
       setEditingCategory(null);
-      setFormData({ name: "", description: "", display_order: 0 });
+      setFormData({ name: "", description: "", display_order: 0, is_active: true });
     }
     setModalOpen(true);
   };
@@ -45,10 +47,10 @@ function AdminCategories() {
     try {
       if (editingCategory) {
         await api.patch(`/admin/categories/${editingCategory.id}/`, formData);
-        showToast("Category updated", "success");
+        showToast("Category updated successfully", "success");
       } else {
         await api.post("/admin/categories/", formData);
-        showToast("Category created", "success");
+        showToast("Category created successfully", "success");
       }
       fetchCategories();
       handleCloseModal();
@@ -61,7 +63,7 @@ function AdminCategories() {
     try {
       await api.delete(`/admin/categories/${id}/`);
       showToast(currentState ? "Category deactivated" : "Category activated", "success");
-      fetchCategories();
+      await fetchCategories(); // Ensure we await the fetch
     } catch (err) {
       showToast("Failed to change category status", "error");
     }
@@ -102,7 +104,7 @@ function AdminCategories() {
   ];
 
   return (
-    <div className="p-4">
+    <div className="admin-profile-page" style={{ padding: "32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <PageHeader 
           title="Complaint Categories" 
@@ -113,12 +115,15 @@ function AdminCategories() {
         </button>
       </div>
 
-      <DataTable
+      <div className="complaint-table-container mb-4" style={{ padding: "20px" }}>
+        <DataTable
+
         columns={columns}
         data={categories}
         keyField="id"
         loading={loading}
       />
+      </div>
 
       <Modal
         open={modalOpen}

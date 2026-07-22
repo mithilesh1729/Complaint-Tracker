@@ -9,6 +9,7 @@ import {
   FaChartBar,
   FaTags,
   FaUserShield,
+  FaEnvelope,
 } from "react-icons/fa";
 
 import { ROUTES } from "../constants/routes";
@@ -137,6 +138,11 @@ export const NAVIGATION = {
       label: "Categories",
       path: "/admin/categories",
       icon: FaTags,
+    },
+    {
+      label: "Email Logs",
+      path: "/admin/emails",
+      icon: FaEnvelope,
     },
     {
       label: "Reports",

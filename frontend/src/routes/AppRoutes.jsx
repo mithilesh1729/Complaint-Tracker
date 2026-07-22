@@ -128,6 +128,7 @@ function AppRoutes() {
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/profile" element={<AdminProfile />} />
+            <Route path="/admin/emails" element={<AdminEmails />} />
           </Route>
         </Route>
       </Route>

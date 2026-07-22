@@ -3,10 +3,10 @@ import "./Navbar.css";
 import Brand from "./Brand";
 import UserMenu from "./UserMenu";
 
-function Navbar() {
+function Navbar({ toggleCollapse }) {
   return (
     <header className="navbar">
-      <Brand />
+      <Brand toggleCollapse={toggleCollapse} />
 
       <UserMenu />
     </header>
