@@ -102,11 +102,41 @@ class HostelAssignmentAdmin(admin.ModelAdmin):
     )
 
 
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
 # =====================================================
 # User
 # =====================================================
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(BaseUserAdmin):
+    # Fieldsets for editing an existing user
+    fieldsets = (
+        (None, {"fields": ("roll_no", "password")}),
+        ("Personal Info", {"fields": ("name", "email", "phone_number")}),
+        ("Role & Department", {"fields": ("role", "department", "hostel", "room_no")}),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser")}),
+    )
+
+    # Fieldsets for creating a new user from the admin form
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "roll_no",
+                    "password",
+                    "name",
+                    "email",
+                    "role",
+                    "department",
+                    "hostel",
+                    "room_no",
+                ),
+            },
+        ),
+    )
+
     list_display = (
         "roll_no",
         "name",
@@ -128,6 +158,8 @@ class UserAdmin(admin.ModelAdmin):
         "department",
         "is_active",
     )
+    
+    ordering = ("roll_no",)
 
 
 # =====================================================
