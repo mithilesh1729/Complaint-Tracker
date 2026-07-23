@@ -14,6 +14,12 @@ const authService = {
   profile() {
     return api.get("/profile/");
   },
+
+  logout(refreshToken) {
+    return api.post("/token/logout/", {
+      refresh_token: refreshToken
+    });
+  },
 };
 
 export default authService;

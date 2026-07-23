@@ -47,9 +47,18 @@ export function AuthProvider({ children }) {
   /**
    * Logout
    */
-  const logout = () => {
-    storage.clear();
-    setUser(null);
+  const logout = async () => {
+    try {
+      const refreshToken = storage.getRefreshToken();
+      if (refreshToken) {
+        await authService.logout(refreshToken);
+      }
+    } catch (error) {
+      console.error("Logout API failed, but clearing local session anyway.", error);
+    } finally {
+      storage.clear();
+      setUser(null);
+    }
   };
 
   /**
