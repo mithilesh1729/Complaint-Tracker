@@ -25,7 +25,6 @@ from core.serializers import StudentListSerializer,StudentCreateSerializer,Stude
 class StudentAPIView(GenericAPIView):
 
     permission_classes = [IsAdminUser]
-    pagination_class = StandardResultsSetPagination
 
     def get(self, request, roll_no=None):
 

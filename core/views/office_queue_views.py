@@ -25,8 +25,6 @@ class OfficeQueueAPIView(ListAPIView):
 
     serializer_class = ComplaintListSerializer
 
-    pagination_class = ComplaintPagination
-
     filter_backends = [
         DjangoFilterBackend,
         SearchFilter,

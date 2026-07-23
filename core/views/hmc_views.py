@@ -31,7 +31,6 @@ class HMCDashboardAPIView(APIView):
 
 class HMCQueueAPIView(ListAPIView):
     permission_classes = [IsHMC]
-    pagination_class = StandardResultsSetPagination
     serializer_class = ComplaintListSerializer
 
     def get_queryset(self):

@@ -36,7 +36,6 @@ class WardenDashboardAPIView(APIView):
 
 class WardenQueueAPIView(ListAPIView):
     permission_classes = [IsWarden]
-    pagination_class = StandardResultsSetPagination
     serializer_class = ComplaintListSerializer
 
     def get_queryset(self):

@@ -155,7 +155,6 @@ class ComplaintListAPIView(generics.ListAPIView):
     """
     serializer_class = ComplaintSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = CustomPagination
     throttle_classes = [ComplaintRateThrottle]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
 

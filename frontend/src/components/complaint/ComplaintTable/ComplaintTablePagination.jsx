@@ -11,8 +11,7 @@ function ComplaintTablePagination({ pagination, onPageChange }) {
 
   if (!pagination) return null;
 
-  const start = (pagination.currentPage - 1) * PAGE_SIZE + 1;
-
+  const start = pagination.count === 0 ? 0 : (pagination.currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(pagination.currentPage * PAGE_SIZE, pagination.count);
 
   return (

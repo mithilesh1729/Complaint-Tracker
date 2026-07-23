@@ -334,7 +334,6 @@ class HostelQueueAPIView(ListAPIView):
     ]
 
     serializer_class = ComplaintSerializer
-    pagination_class = ComplaintPagination
 
     filter_backends = [
         DjangoFilterBackend,
@@ -379,8 +378,6 @@ class OfficeAssignedComplaintsAPIView(ListAPIView):
     ]
 
     serializer_class = ComplaintListSerializer
-
-    pagination_class = ComplaintPagination
 
     filter_backends = [
         DjangoFilterBackend,
