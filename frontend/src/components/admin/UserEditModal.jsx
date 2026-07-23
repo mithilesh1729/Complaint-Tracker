@@ -177,7 +177,13 @@ function UserEditModal({ isOpen, onClose, onSuccess, userType, initialData }) {
 
               <div className="form-group">
                 <label>Hostel Assignment</label>
-                <select name="hostel" value={formData.hostel} onChange={handleChange} required>
+                <select 
+                  name="hostel" 
+                  value={formData.hostel} 
+                  onChange={handleChange} 
+                  required={!(userType === "staff" && formData.role === "hmc")}
+                  disabled={userType === "staff" && formData.role === "hmc"}
+                >
                   <option value="">Select Hostel</option>
                   {hostels.map(h => (
                     <option key={h.id} value={h.id}>{h.name}</option>

@@ -159,7 +159,8 @@ function UserCreateModal({ isOpen, onClose, onSuccess, userType }) {
                   name="hostel"
                   value={formData.hostel}
                   onChange={handleChange}
-                  required
+                  required={!(userType === "staff" && formData.role === "hmc")}
+                  disabled={userType === "staff" && formData.role === "hmc"}
                 >
                   <option value="">Select Hostel</option>
                   {hostels.map((h) => (

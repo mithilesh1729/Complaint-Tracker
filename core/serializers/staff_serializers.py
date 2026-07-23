@@ -7,7 +7,9 @@ from core.services.staff_service import StaffService
 
 class StaffSerializer(serializers.ModelSerializer):
     hostel = serializers.PrimaryKeyRelatedField(
-        queryset=Hostel.objects.filter(is_active=True)
+        queryset=Hostel.objects.filter(is_active=True),
+        allow_null=True,
+        required=False
     )
 
     class Meta:
@@ -44,6 +46,22 @@ class StaffSerializer(serializers.ModelSerializer):
         if value and (not value.isdigit() or len(value) != 10):
             raise serializers.ValidationError("Phone number must be exactly 10 digits.")
         return value
+
+    def validate(self, data):
+        role = data.get("role") or (self.instance.role if self.instance else None)
+        hostel = data.get("hostel")
+        
+        # If updating and hostel isn't provided, check existing
+        if self.instance and "hostel" not in data:
+            hostel = Hostel.objects.get(name=self.instance.hostel) if self.instance.hostel else None
+
+        if role in ["warden", "hostel_office"] and not hostel:
+            raise serializers.ValidationError({"hostel": f"Hostel is required for {role}."})
+            
+        if role == "hmc":
+            data["hostel"] = None
+            
+        return data
 
     def create(self, validated_data):
 
