@@ -23,7 +23,6 @@ from core.tasks import send_complaint_status_email_task
 
 from core.permissions import IsHostelOffice
 from core.filters import ComplaintFilter
-from core.pagination import ComplaintPagination
 from core.selectors.complaint_list_selector import ComplaintListSelector
 from core.serializers.complaint_list_serializers import ComplaintListSerializer
 

@@ -15,7 +15,6 @@ from core.selectors.category_selector import CategorySelector
 
 
 
-from core.pagination import CustomPagination
 from core.throttling import ComplaintRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 from core.permissions import CanViewComplaint

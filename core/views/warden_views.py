@@ -6,7 +6,6 @@ from rest_framework import status
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from core.models import Complaint, User, ComplaintStatus, UserRole
-from core.pagination import StandardResultsSetPagination
 from core.serializers import ComplaintListSerializer
 from core.tasks import send_complaint_status_email_task
 

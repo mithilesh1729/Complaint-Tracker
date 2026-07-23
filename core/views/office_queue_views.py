@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsHostelOffice
 
 from core.filters import ComplaintFilter
-from core.pagination import ComplaintPagination
 from core.selectors.complaint_list_selector import ComplaintListSelector
 from core.serializers.complaint_list_serializers import ComplaintListSerializer
 

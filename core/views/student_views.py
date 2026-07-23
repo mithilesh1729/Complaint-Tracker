@@ -4,7 +4,6 @@
 
 
 from rest_framework.generics import GenericAPIView
-from core.pagination import StandardResultsSetPagination
 from rest_framework.permissions import IsAdminUser
 from core.selectors.student_selector import StudentSelector
 from core.services.student_service import StudentService
